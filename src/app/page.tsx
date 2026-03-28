@@ -877,7 +877,7 @@ function LibraryTab({ templates, items, onEditItem, onDeleteItem, onQuantityChan
       <div
         ref={listRef}
         className="space-y-3"
-        style={{ touchAction: sortMode ? 'none' : 'auto', userSelect: 'none' }}
+        style={{ touchAction: activeDragId ? 'none' : 'auto', userSelect: 'none' }}
         onPointerMove={sortMode ? onDragMove : undefined}
         onPointerUp={sortMode ? endDrag : undefined}
         onPointerCancel={sortMode ? endDrag : undefined}
@@ -1184,7 +1184,7 @@ function TemplatesTab({ templates, onCreateTemplate, onEditTemplate, onDeleteTem
       <div
         ref={listRef}
         className="space-y-3"
-        style={{ touchAction: sortMode ? 'none' : 'auto', userSelect: 'none' }}
+        style={{ touchAction: activeDragId ? 'none' : 'auto', userSelect: 'none' }}
         onPointerMove={sortMode ? onDragMove : undefined}
         onPointerUp={sortMode ? endDrag : undefined}
         onPointerCancel={sortMode ? endDrag : undefined}
