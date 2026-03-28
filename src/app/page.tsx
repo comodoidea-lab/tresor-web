@@ -44,7 +44,6 @@ import {
   Clock,
   BookOpen,
   Filter,
-  GripVertical,
   CheckSquare,
   Square,
 } from 'lucide-react';
@@ -355,13 +354,14 @@ function ItemEditorModal({ item, templates, defaultTemplateId, onSave, onClose, 
 interface TemplateEditorModalProps {
   template: Template | null;
   onSave: (t: Template) => void;
+  onDelete?: (id: string) => void;
   onClose: () => void;
   isDark: boolean;
 }
 
-function TemplateEditorModal({ template, onSave, onClose, isDark }: TemplateEditorModalProps) {
+function TemplateEditorModal({ template, onSave, onDelete, onClose, isDark }: TemplateEditorModalProps) {
   const [name, setName] = useState(template?.name ?? '');
-  const [subLocations, setSubLocations] = useState<string[]>(template?.subLocations ?? ['']);
+  const [subLocations, setSubLocations] = useState<string[]>(template?.subLocations ?? []);
   const [attributes, setAttributes] = useState<Template['attributes']>(template?.attributes ?? []);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -374,7 +374,7 @@ function TemplateEditorModal({ template, onSave, onClose, isDark }: TemplateEdit
   const removeAttribute = (i: number) => setAttributes(attributes.filter((_, idx) => idx !== i));
 
   const handleSave = async () => {
-    if (!name.trim()) { setError('テンプレート名を入力してください'); return; }
+    if (!name.trim()) { setError('テンプレート名称を入力してください'); return; }
     setSaving(true);
     setError('');
     try {
@@ -388,57 +388,68 @@ function TemplateEditorModal({ template, onSave, onClose, isDark }: TemplateEdit
     }
   };
 
-  const attrTypeLabels: Record<string, string> = { text: 'テキスト', number: '数値', date: '日付', tag: 'タグ', url: 'URL', checkbox: 'チェック' };
+  const handleDelete = () => {
+    if (template && onDelete && window.confirm('このテンプレートを削除しますか？')) {
+      onDelete(template.id);
+    }
+  };
+
+  const attrTypeLabels: Record<string, string> = { text: '文字 (Text)', number: '数値 (Number)', date: '日付 (Date)', tag: 'タグ (Tag)', url: 'URL', checkbox: 'チェック (Checkbox)' };
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={onClose}>
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm pointer-events-none" />
-      <div className={`relative z-10 w-full sm:max-w-lg max-h-[90vh] overflow-y-auto rounded-t-3xl sm:rounded-3xl shadow-2xl ${isDark ? 'bg-slate-800' : 'bg-white'}`} onClick={(e) => e.stopPropagation()}>
-        <div className="sticky top-0 z-10 flex items-center justify-between px-6 pt-6 pb-4 border-b border-slate-200 dark:border-slate-700 bg-inherit rounded-t-3xl">
-          <h2 className="text-lg font-bold text-slate-800 dark:text-white">{template ? 'テンプレートを編集' : 'テンプレートを作成'}</h2>
-          <button onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors"><X size={20} className="text-slate-500" /></button>
+      <div className={`relative z-10 w-full sm:max-w-lg max-h-[85vh] overflow-y-auto rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-2xl ${isDark ? 'bg-slate-900' : 'bg-white'}`} onClick={(e) => e.stopPropagation()}>
+        <div className="sticky top-0 z-10 flex items-center justify-between px-8 pt-6 pb-5 border-b border-slate-100 dark:border-slate-800 bg-inherit rounded-t-[2.5rem]">
+          <h2 className="text-xl font-bold text-slate-800 dark:text-white">{template ? 'テンプレート編集' : 'テンプレート作成'}</h2>
+          <button onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors"><X size={20} className="text-slate-400" /></button>
         </div>
-        <div className="p-6 space-y-6">
+        <div className="px-8 py-6 space-y-6">
+          <input type="text" value={name} onChange={(e) => { setName(e.target.value); setError(''); }} placeholder="名称 (例: 冷蔵庫)" className="w-full px-5 py-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-sm font-bold text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400" autoFocus />
           <div>
-            <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2 block">テンプレート名 *</label>
-            <input type="text" value={name} onChange={(e) => { setName(e.target.value); setError(''); }} placeholder="例: 冷蔵庫" className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-2xl text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 font-medium" autoFocus />
-          </div>
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">保管場所</label>
-              <button onClick={addSubLocation} className="text-xs text-amber-600 font-bold hover:text-amber-700">+ 追加</button>
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-[10px] font-bold text-slate-400">階層オプション</span>
+              <button onClick={addSubLocation} className="text-amber-600 text-[10px] font-bold hover:text-amber-700">+ 追加</button>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-3">
               {subLocations.map((loc, i) => (
-                <div key={i} className="flex gap-2">
-                  <input type="text" value={loc} onChange={(e) => updateSubLocation(i, e.target.value)} placeholder={`場所 ${i + 1}`} className="flex-1 px-4 py-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 font-medium text-sm" />
-                  <button onClick={() => removeSubLocation(i)} className="p-2 hover:bg-red-50 dark:hover:bg-red-900/20 text-slate-400 hover:text-red-500 rounded-xl transition-colors"><X size={16} /></button>
+                <div key={i} className="flex items-center gap-2">
+                  <input type="text" value={loc} onChange={(e) => updateSubLocation(i, e.target.value)} className="flex-1 px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400" />
+                  <button onClick={() => removeSubLocation(i)} className="p-2 text-slate-300 hover:text-red-400 transition-colors"><Trash2 size={16} /></button>
                 </div>
               ))}
             </div>
           </div>
           <div>
-            <div className="flex items-center justify-between mb-2">
-              <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">属性</label>
-              <button onClick={addAttribute} className="text-xs text-amber-600 font-bold hover:text-amber-700">+ 追加</button>
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-[10px] font-bold text-slate-400">デフォルト属性</span>
+              <button onClick={addAttribute} className="text-amber-600 text-[10px] font-bold hover:text-amber-700">+ 追加</button>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-3">
               {attributes.map((attr, i) => (
-                <div key={i} className="flex gap-2">
-                  <input type="text" value={attr.name} onChange={(e) => updateAttribute(i, 'name', e.target.value)} placeholder="属性名" className="flex-1 px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 font-medium text-sm" />
-                  <select value={attr.type} onChange={(e) => updateAttribute(i, 'type', e.target.value)} className="px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-amber-400 font-medium text-sm">
+                <div key={i} className="bg-slate-50 dark:bg-slate-800 p-3 rounded-2xl border border-slate-100 dark:border-slate-700 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <input type="text" value={attr.name} onChange={(e) => updateAttribute(i, 'name', e.target.value)} placeholder="項目名" className="flex-1 px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-bold text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400" />
+                    <button onClick={() => removeAttribute(i)} className="p-2 text-slate-300 hover:text-red-400 transition-colors"><Trash2 size={16} /></button>
+                  </div>
+                  <select value={attr.type} onChange={(e) => updateAttribute(i, 'type', e.target.value)} className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-amber-400 font-medium text-sm">
                     {Object.entries(attrTypeLabels).map(([val, label]) => <option key={val} value={val}>{label}</option>)}
                   </select>
-                  <button onClick={() => removeAttribute(i)} className="p-2 hover:bg-red-50 dark:hover:bg-red-900/20 text-slate-400 hover:text-red-500 rounded-xl transition-colors"><X size={16} /></button>
                 </div>
               ))}
             </div>
           </div>
         </div>
-        {error && <p className="px-6 pb-2 text-red-500 text-sm font-bold">{error}</p>}
-        <div className="sticky bottom-0 flex gap-3 px-6 pb-6 pt-4 bg-inherit border-t border-slate-200 dark:border-slate-700">
-          <button onClick={onClose} className="flex-1 py-3 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold rounded-2xl hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">キャンセル</button>
-          <button onClick={handleSave} disabled={saving} className="flex-1 py-3 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-2xl transition-colors disabled:opacity-60">{saving ? '保存中...' : template ? '保存する' : '作成する'}</button>
+        {error && <p className="px-8 pb-2 text-red-500 text-sm font-bold">{error}</p>}
+        <div className="px-8 pb-8 space-y-4">
+          <button onClick={handleSave} disabled={saving} className="w-full py-4 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-3xl shadow-sm transition-colors disabled:opacity-60">
+            {saving ? '保存中...' : '保存する'}
+          </button>
+          {template && onDelete && (
+            <button onClick={handleDelete} className="w-full py-2 text-center text-xs font-bold text-slate-400 hover:text-red-500 transition-colors">
+              このテンプレートを削除
+            </button>
+          )}
         </div>
       </div>
     </div>
@@ -456,21 +467,22 @@ interface PresetSelectionModalProps {
 }
 
 function PresetSelectionModal({ onSelect, onClose, isDark }: PresetSelectionModalProps) {
-  const icons: Record<string, string> = { '冷蔵庫': '🧊', '引き出し・棚': '📦', '商品在庫': '🏷️', '本棚': '📚', 'デジタル資産': '💻', '買い物リスト': '🛒', 'アイデアノート': '💡' };
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={onClose}>
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm pointer-events-none" />
-      <div className={`relative z-10 w-full sm:max-w-md max-h-[80vh] overflow-y-auto rounded-t-3xl sm:rounded-3xl shadow-2xl ${isDark ? 'bg-slate-800' : 'bg-white'}`} onClick={(e) => e.stopPropagation()}>
-        <div className="sticky top-0 z-10 flex items-center justify-between px-6 pt-6 pb-4 border-b border-slate-200 dark:border-slate-700 bg-inherit rounded-t-3xl">
-          <h2 className="text-lg font-bold text-slate-800 dark:text-white">プリセットから選択</h2>
+      <div className={`relative z-10 w-full sm:max-w-md max-h-[80vh] overflow-y-auto rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-2xl ${isDark ? 'bg-slate-900' : 'bg-white'}`} onClick={(e) => e.stopPropagation()}>
+        <div className="sticky top-0 z-10 flex items-center justify-between px-6 py-5 border-b border-slate-100 dark:border-slate-800 bg-inherit rounded-t-[2.5rem]">
+          <h2 className="text-lg font-bold text-slate-800 dark:text-white">プリセット</h2>
           <button onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors"><X size={20} className="text-slate-500" /></button>
         </div>
-        <div className="p-6 grid grid-cols-2 gap-3">
+        <div className="p-4 space-y-3">
           {PRESET_TEMPLATES.map((preset) => (
-            <button key={preset.name} onClick={() => onSelect(preset)} className={`flex flex-col items-start p-4 rounded-2xl border-2 border-transparent hover:border-amber-400 transition-all text-left ${isDark ? 'bg-slate-700 hover:bg-slate-600' : 'bg-slate-50 hover:bg-amber-50'}`}>
-              <span className="text-2xl mb-2">{icons[preset.name] ?? '📋'}</span>
-              <span className="font-bold text-slate-800 dark:text-white text-sm">{preset.name}</span>
-              <span className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{preset.attributes.length}つの属性</span>
+            <button
+              key={preset.name}
+              onClick={() => onSelect(preset)}
+              className={`w-full text-left p-5 rounded-3xl font-bold text-slate-800 dark:text-white text-base hover:opacity-80 transition-opacity ${isDark ? 'bg-slate-800' : 'bg-slate-50'}`}
+            >
+              {preset.name}
             </button>
           ))}
         </div>
@@ -641,8 +653,19 @@ function LibraryTab({ templates, items, onEditItem, onDeleteItem, onQuantityChan
   const [search, setSearch] = useState('');
   const [filterTemplateId, setFilterTemplateId] = useState<string | null>(null);
   const [activeAttributeFilter, setActiveAttributeFilter] = useState<{ key: string; value: string } | null>(null);
-  const [dragIndex, setDragIndex] = useState<number | null>(null);
-  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+
+  // Long-press drag sort state
+  const [activeDragId, setActiveDragId] = useState<string | null>(null);
+  const [dragDeltaY, setDragDeltaY] = useState(0);
+  const [dropIndex, setDropIndex] = useState<number | null>(null);
+  const lpTimer = useRef<ReturnType<typeof setTimeout>>();
+  const dragStartY = useRef(0);
+  const dragFromIdx = useRef(0);
+  const dragItemH = useRef(88);
+  const origCenters = useRef<number[]>([]);
+  const rowRefs = useRef<Map<string, HTMLDivElement>>(new Map());
+  const listRef = useRef<HTMLDivElement>(null);
+  const justDragged = useRef<string | null>(null);
 
   const filtered = useMemo(() => {
     return items.filter((item) => {
@@ -667,6 +690,72 @@ function LibraryTab({ templates, items, onEditItem, onDeleteItem, onQuantityChan
     const [moved] = newItems.splice(fromFull, 1);
     newItems.splice(toFull, 0, moved);
     onReorderItems(newItems);
+  };
+
+  const initDrag = (e: React.PointerEvent, item: Item, idx: number) => {
+    const y = e.clientY;
+    const pid = e.pointerId;
+    dragStartY.current = y;
+    lpTimer.current = setTimeout(() => {
+      const el = rowRefs.current.get(item.id);
+      dragItemH.current = (el?.getBoundingClientRect().height ?? 80) + 12;
+      origCenters.current = filtered.map((i) => {
+        const r = rowRefs.current.get(i.id);
+        return r ? r.getBoundingClientRect().top + r.getBoundingClientRect().height / 2 : 0;
+      });
+      dragFromIdx.current = idx;
+      try { listRef.current?.setPointerCapture(pid); } catch { /* */ }
+      setActiveDragId(item.id);
+      setDropIndex(idx);
+      if (typeof navigator.vibrate === 'function') navigator.vibrate(30);
+    }, 400);
+  };
+
+  const onDragMove = (e: React.PointerEvent) => {
+    if (!activeDragId) {
+      if (lpTimer.current && Math.abs(e.clientY - dragStartY.current) > 10) {
+        clearTimeout(lpTimer.current);
+        lpTimer.current = undefined;
+      }
+      return;
+    }
+    e.preventDefault();
+    const delta = e.clientY - dragStartY.current;
+    setDragDeltaY(delta);
+    const currentCY = (origCenters.current[dragFromIdx.current] ?? 0) + delta;
+    let bestIdx = dragFromIdx.current;
+    let bestDist = Infinity;
+    origCenters.current.forEach((cy, i) => {
+      const d = Math.abs(currentCY - cy);
+      if (d < bestDist) { bestDist = d; bestIdx = i; }
+    });
+    if (bestIdx !== dropIndex) setDropIndex(bestIdx);
+  };
+
+  const endDrag = () => {
+    clearTimeout(lpTimer.current);
+    lpTimer.current = undefined;
+    if (activeDragId && dropIndex !== null && dropIndex !== dragFromIdx.current) {
+      handleReorder(dragFromIdx.current, dropIndex);
+      justDragged.current = activeDragId;
+      requestAnimationFrame(() => { justDragged.current = null; });
+    }
+    setActiveDragId(null);
+    setDragDeltaY(0);
+    setDropIndex(null);
+  };
+
+  const getRowStyle = (id: string, index: number): React.CSSProperties => {
+    if (id === activeDragId) {
+      return { transform: `translateY(${dragDeltaY}px) scale(1.03)`, zIndex: 50, position: 'relative', boxShadow: '0 20px 40px rgba(0,0,0,0.2)' };
+    }
+    if (activeDragId !== null && dropIndex !== null) {
+      const h = dragItemH.current;
+      const from = dragFromIdx.current;
+      if (from < dropIndex && index > from && index <= dropIndex) return { transform: `translateY(-${h}px)`, transition: 'transform 0.15s ease' };
+      if (from > dropIndex && index >= dropIndex && index < from) return { transform: `translateY(${h}px)`, transition: 'transform 0.15s ease' };
+    }
+    return { transition: 'transform 0.15s ease' };
   };
 
   return (
@@ -704,27 +793,34 @@ function LibraryTab({ templates, items, onEditItem, onDeleteItem, onQuantityChan
         </div>
       )}
 
-      {/* Items */}
-      <div className="space-y-3">
+      {/* Items — long-press to drag and reorder */}
+      <div
+        ref={listRef}
+        className="space-y-3"
+        style={{ touchAction: activeDragId ? 'none' : 'auto', userSelect: 'none' }}
+        onPointerMove={onDragMove}
+        onPointerUp={endDrag}
+        onPointerCancel={endDrag}
+      >
         {filtered.map((item, index) => {
           const template = templates.find((t) => t.id === item.templateId);
+          const isDragging = activeDragId === item.id;
           return (
             <div
               key={item.id}
-              className={`flex items-center gap-1 transition-opacity rounded-[2rem] ${dragIndex === index ? 'opacity-40' : 'opacity-100'} ${dragOverIndex === index && dragIndex !== index ? 'ring-2 ring-amber-400' : ''}`}
-              draggable
-              onDragStart={(e) => { e.dataTransfer.effectAllowed = 'move'; setDragIndex(index); }}
-              onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; setDragOverIndex(index); }}
-              onDragLeave={() => setDragOverIndex(null)}
-              onDrop={(e) => { e.preventDefault(); if (dragIndex !== null) handleReorder(dragIndex, index); setDragIndex(null); setDragOverIndex(null); }}
-              onDragEnd={() => { setDragIndex(null); setDragOverIndex(null); }}
+              ref={(el) => { if (el) rowRefs.current.set(item.id, el); else rowRefs.current.delete(item.id); }}
+              style={getRowStyle(item.id, index)}
+              className="flex items-center gap-2"
+              onPointerDown={(e) => initDrag(e, item, index)}
+              onPointerCancel={() => { clearTimeout(lpTimer.current); lpTimer.current = undefined; }}
             >
-              {/* Grip */}
-              <div className="cursor-grab active:cursor-grabbing p-2 text-slate-300 hover:text-amber-400 flex-shrink-0 select-none">
-                <GripVertical size={20} />
-              </div>
               {/* Card */}
-              <div className="flex-1 bg-white dark:bg-slate-800 p-4 rounded-[2rem] shadow-sm border border-slate-100 dark:border-slate-700 cursor-pointer" onClick={() => onEditItem(item)}>
+              <div
+                className={`flex-1 bg-white dark:bg-slate-800 p-4 rounded-[2rem] shadow-sm border cursor-pointer select-none transition-shadow
+                  ${isDragging ? 'border-amber-400 ring-2 ring-amber-300/40 shadow-2xl' : 'border-slate-100 dark:border-slate-700'}
+                `}
+                onClick={() => { if (justDragged.current === item.id) return; onEditItem(item); }}
+              >
                 <div className="flex items-start gap-4">
                   <div className="w-12 h-12 bg-slate-50 dark:bg-slate-700 rounded-2xl flex items-center justify-center flex-shrink-0">
                     <Box size={24} className="text-slate-300" />
@@ -743,9 +839,9 @@ function LibraryTab({ templates, items, onEditItem, onDeleteItem, onQuantityChan
                   </div>
                   {/* Quantity controls */}
                   <div className="flex items-center bg-slate-50 dark:bg-slate-700 rounded-2xl p-1 self-center flex-shrink-0" onClick={(e) => e.stopPropagation()}>
-                    <button onClick={() => onQuantityChange(item.id, -1)} className="p-1"><MinusCircle size={18} className="text-slate-400" /></button>
+                    <button onClick={(e) => { e.stopPropagation(); onQuantityChange(item.id, -1); }} className="p-1"><MinusCircle size={18} className="text-slate-400" /></button>
                     <span className="w-6 text-center font-bold text-sm text-slate-800 dark:text-white">{item.quantity || 0}</span>
-                    <button onClick={() => onQuantityChange(item.id, 1)} className="p-1"><PlusCircle size={18} className="text-slate-400" /></button>
+                    <button onClick={(e) => { e.stopPropagation(); onQuantityChange(item.id, 1); }} className="p-1"><PlusCircle size={18} className="text-slate-400" /></button>
                   </div>
                 </div>
                 {/* Attribute chips */}
@@ -776,7 +872,7 @@ function LibraryTab({ templates, items, onEditItem, onDeleteItem, onQuantityChan
               </div>
               {/* Delete */}
               <button
-                onClick={(e) => { e.stopPropagation(); if (window.confirm('アイテムを削除しますか？')) onDeleteItem(item.id); }}
+                onClick={(e) => { e.stopPropagation(); if (!activeDragId && window.confirm('アイテムを削除しますか？')) onDeleteItem(item.id); }}
                 className="p-2 text-slate-300 hover:text-red-400 transition-colors flex-shrink-0"
               >
                 <Trash2 size={16} />
@@ -809,8 +905,18 @@ interface TemplatesTabProps {
 }
 
 function TemplatesTab({ templates, onCreateTemplate, onEditTemplate, onDeleteTemplate, onShowPresets, onReorderTemplates }: TemplatesTabProps) {
-  const [dragIndex, setDragIndex] = useState<number | null>(null);
-  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+  // Long-press drag sort state
+  const [activeDragId, setActiveDragId] = useState<string | null>(null);
+  const [dragDeltaY, setDragDeltaY] = useState(0);
+  const [dropIndex, setDropIndex] = useState<number | null>(null);
+  const lpTimer = useRef<ReturnType<typeof setTimeout>>();
+  const dragStartY = useRef(0);
+  const dragFromIdx = useRef(0);
+  const dragItemH = useRef(88);
+  const origCenters = useRef<number[]>([]);
+  const rowRefs = useRef<Map<string, HTMLDivElement>>(new Map());
+  const listRef = useRef<HTMLDivElement>(null);
+  const justDragged = useRef<string | null>(null);
 
   const handleReorder = (fromIdx: number, toIdx: number) => {
     if (fromIdx === toIdx) return;
@@ -818,6 +924,72 @@ function TemplatesTab({ templates, onCreateTemplate, onEditTemplate, onDeleteTem
     const [moved] = newTemplates.splice(fromIdx, 1);
     newTemplates.splice(toIdx, 0, moved);
     onReorderTemplates(newTemplates);
+  };
+
+  const initDrag = (e: React.PointerEvent, t: Template, idx: number) => {
+    const y = e.clientY;
+    const pid = e.pointerId;
+    dragStartY.current = y;
+    lpTimer.current = setTimeout(() => {
+      const el = rowRefs.current.get(t.id);
+      dragItemH.current = (el?.getBoundingClientRect().height ?? 80) + 12;
+      origCenters.current = templates.map((tmpl) => {
+        const r = rowRefs.current.get(tmpl.id);
+        return r ? r.getBoundingClientRect().top + r.getBoundingClientRect().height / 2 : 0;
+      });
+      dragFromIdx.current = idx;
+      try { listRef.current?.setPointerCapture(pid); } catch { /* */ }
+      setActiveDragId(t.id);
+      setDropIndex(idx);
+      if (typeof navigator.vibrate === 'function') navigator.vibrate(30);
+    }, 400);
+  };
+
+  const onDragMove = (e: React.PointerEvent) => {
+    if (!activeDragId) {
+      if (lpTimer.current && Math.abs(e.clientY - dragStartY.current) > 10) {
+        clearTimeout(lpTimer.current);
+        lpTimer.current = undefined;
+      }
+      return;
+    }
+    e.preventDefault();
+    const delta = e.clientY - dragStartY.current;
+    setDragDeltaY(delta);
+    const currentCY = (origCenters.current[dragFromIdx.current] ?? 0) + delta;
+    let bestIdx = dragFromIdx.current;
+    let bestDist = Infinity;
+    origCenters.current.forEach((cy, i) => {
+      const d = Math.abs(currentCY - cy);
+      if (d < bestDist) { bestDist = d; bestIdx = i; }
+    });
+    if (bestIdx !== dropIndex) setDropIndex(bestIdx);
+  };
+
+  const endDrag = () => {
+    clearTimeout(lpTimer.current);
+    lpTimer.current = undefined;
+    if (activeDragId && dropIndex !== null && dropIndex !== dragFromIdx.current) {
+      handleReorder(dragFromIdx.current, dropIndex);
+      justDragged.current = activeDragId;
+      requestAnimationFrame(() => { justDragged.current = null; });
+    }
+    setActiveDragId(null);
+    setDragDeltaY(0);
+    setDropIndex(null);
+  };
+
+  const getRowStyle = (id: string, index: number): React.CSSProperties => {
+    if (id === activeDragId) {
+      return { transform: `translateY(${dragDeltaY}px) scale(1.03)`, zIndex: 50, position: 'relative', boxShadow: '0 20px 40px rgba(0,0,0,0.2)' };
+    }
+    if (activeDragId !== null && dropIndex !== null) {
+      const h = dragItemH.current;
+      const from = dragFromIdx.current;
+      if (from < dropIndex && index > from && index <= dropIndex) return { transform: `translateY(-${h}px)`, transition: 'transform 0.15s ease' };
+      if (from > dropIndex && index >= dropIndex && index < from) return { transform: `translateY(${h}px)`, transition: 'transform 0.15s ease' };
+    }
+    return { transition: 'transform 0.15s ease' };
   };
 
   return (
@@ -837,45 +1009,54 @@ function TemplatesTab({ templates, onCreateTemplate, onEditTemplate, onDeleteTem
         </div>
       </div>
 
-      {/* Templates list */}
-      <div className="space-y-3">
-        {templates.map((template, index) => (
-          <div
-            key={template.id}
-            className={`flex items-center gap-1 transition-opacity ${dragIndex === index ? 'opacity-40' : 'opacity-100'} ${dragOverIndex === index && dragIndex !== index ? 'ring-2 ring-amber-400 rounded-3xl' : ''}`}
-            draggable
-            onDragStart={(e) => { e.dataTransfer.effectAllowed = 'move'; setDragIndex(index); }}
-            onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; setDragOverIndex(index); }}
-            onDragLeave={() => setDragOverIndex(null)}
-            onDrop={(e) => { e.preventDefault(); if (dragIndex !== null) handleReorder(dragIndex, index); setDragIndex(null); setDragOverIndex(null); }}
-            onDragEnd={() => { setDragIndex(null); setDragOverIndex(null); }}
-          >
-            {/* Grip */}
-            <div className="cursor-grab active:cursor-grabbing p-2 text-slate-300 hover:text-amber-400 flex-shrink-0 select-none">
-              <GripVertical size={20} />
-            </div>
-            {/* Card */}
-            <button onClick={() => onEditTemplate(template)} className="flex-1 bg-white dark:bg-slate-800 p-4 rounded-3xl border border-slate-100 dark:border-slate-700 flex items-center justify-between hover:shadow-md transition-shadow">
-              <div className="flex items-center gap-3 flex-1 min-w-0">
-                <div className="p-2.5 bg-amber-50 dark:bg-slate-700 rounded-2xl flex-shrink-0">
-                  <Layers size={20} className="text-amber-600" />
-                </div>
-                <div className="flex-1 min-w-0 text-left">
-                  <p className="font-bold text-slate-800 dark:text-white text-base truncate">{template.name}</p>
-                  <p className="text-[10px] text-slate-400 font-bold mt-1">{template.subLocations?.length || 0} 階層 / {template.attributes?.length || 0} 属性</p>
-                </div>
-              </div>
-              <ChevronRight size={18} className="text-slate-200 flex-shrink-0" />
-            </button>
-            {/* Delete */}
-            <button
-              onClick={(e) => { e.stopPropagation(); if (window.confirm('このテンプレートを削除しますか？関連するアイテムもすべて削除されます。')) onDeleteTemplate(template.id); }}
-              className="p-2 text-slate-300 hover:text-red-400 transition-colors flex-shrink-0"
+      {/* Templates list — long-press to drag and reorder */}
+      <div
+        ref={listRef}
+        className="space-y-3"
+        style={{ touchAction: activeDragId ? 'none' : 'auto', userSelect: 'none' }}
+        onPointerMove={onDragMove}
+        onPointerUp={endDrag}
+        onPointerCancel={endDrag}
+      >
+        {templates.map((template, index) => {
+          const isDragging = activeDragId === template.id;
+          return (
+            <div
+              key={template.id}
+              ref={(el) => { if (el) rowRefs.current.set(template.id, el); else rowRefs.current.delete(template.id); }}
+              style={getRowStyle(template.id, index)}
+              className="flex items-center gap-2"
+              onPointerDown={(e) => initDrag(e, template, index)}
+              onPointerCancel={() => { clearTimeout(lpTimer.current); lpTimer.current = undefined; }}
             >
-              <Trash2 size={16} />
-            </button>
-          </div>
-        ))}
+              {/* Card */}
+              <button
+                className={`flex-1 bg-white dark:bg-slate-800 p-4 rounded-3xl border select-none flex items-center justify-between transition-all
+                  ${isDragging ? 'border-amber-400 ring-2 ring-amber-300/40 shadow-2xl' : 'border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md'}
+                `}
+                onClick={() => { if (justDragged.current === template.id) return; onEditTemplate(template); }}
+              >
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                  <div className="p-2.5 bg-amber-50 dark:bg-slate-700 rounded-2xl flex-shrink-0">
+                    <Layers size={20} className="text-amber-600" />
+                  </div>
+                  <div className="flex-1 min-w-0 text-left">
+                    <p className="font-bold text-slate-800 dark:text-white text-base truncate">{template.name}</p>
+                    <p className="text-[10px] text-slate-400 font-bold mt-1">{template.subLocations?.length || 0} 階層 / {template.attributes?.length || 0} 属性</p>
+                  </div>
+                </div>
+                <ChevronRight size={18} className="text-slate-200 flex-shrink-0" />
+              </button>
+              {/* Delete */}
+              <button
+                onClick={(e) => { e.stopPropagation(); if (!activeDragId && window.confirm('このテンプレートを削除しますか？関連するアイテムもすべて削除されます。')) onDeleteTemplate(template.id); }}
+                className="p-2 text-slate-300 hover:text-red-400 transition-colors flex-shrink-0"
+              >
+                <Trash2 size={16} />
+              </button>
+            </div>
+          );
+        })}
 
         {templates.length === 0 && (
           <div className="text-center py-12">
@@ -1240,6 +1421,7 @@ export default function HomePage() {
         <TemplateEditorModal
           template={editingTemplate}
           onSave={handleSaveTemplate}
+          onDelete={async (id) => { await deleteTemplate(id); setShowTemplateEditor(false); setEditingTemplate(null); }}
           onClose={() => { setShowTemplateEditor(false); setEditingTemplate(null); }}
           isDark={isDark}
         />
