@@ -877,7 +877,7 @@ function LibraryTab({ templates, items, onEditItem, onDeleteItem, onQuantityChan
       <div
         ref={listRef}
         className="space-y-3"
-        style={{ touchAction: activeDragId ? 'none' : 'auto', userSelect: 'none' }}
+        style={{ touchAction: sortMode ? 'none' : 'auto', userSelect: 'none' }}
         onPointerMove={sortMode ? onDragMove : undefined}
         onPointerUp={sortMode ? endDrag : undefined}
         onPointerCancel={sortMode ? endDrag : undefined}
@@ -916,7 +916,7 @@ function LibraryTab({ templates, items, onEditItem, onDeleteItem, onQuantityChan
                   ${deleteMode ? 'border-red-100 dark:border-red-900/30' : ''}
                 `}
                 onClick={(e) => {
-                  if (didDrag.current) { e.preventDefault(); return; }
+                  if (sortMode || didDrag.current) { e.preventDefault(); return; }
                   if (isSwiped) { setSwipedId(null); return; }
                   onEditItem(item);
                 }}
@@ -1184,7 +1184,7 @@ function TemplatesTab({ templates, onCreateTemplate, onEditTemplate, onDeleteTem
       <div
         ref={listRef}
         className="space-y-3"
-        style={{ touchAction: activeDragId ? 'none' : 'auto', userSelect: 'none' }}
+        style={{ touchAction: sortMode ? 'none' : 'auto', userSelect: 'none' }}
         onPointerMove={sortMode ? onDragMove : undefined}
         onPointerUp={sortMode ? endDrag : undefined}
         onPointerCancel={sortMode ? endDrag : undefined}
@@ -1222,7 +1222,7 @@ function TemplatesTab({ templates, onCreateTemplate, onEditTemplate, onDeleteTem
                   ${deleteMode ? 'border-red-100 dark:border-red-900/30' : ''}
                 `}
                 onClick={() => {
-                  if (didDrag.current) return;
+                  if (sortMode || didDrag.current) return;
                   if (isSwiped) { setSwipedId(null); return; }
                   onEditTemplate(template);
                 }}
