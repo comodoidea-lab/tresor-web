@@ -46,6 +46,7 @@ import {
   Filter,
   CheckSquare,
   Square,
+  GripVertical,
 } from 'lucide-react';
 
 // ============================================================
@@ -665,6 +666,9 @@ function LibraryTab({ templates, items, onEditItem, onDeleteItem, onQuantityChan
   const [search, setSearch] = useState('');
   const [filterTemplateId, setFilterTemplateId] = useState<string | null>(null);
   const [activeAttributeFilter, setActiveAttributeFilter] = useState<{ key: string; value: string } | null>(null);
+  const [sortMode, setSortMode] = useState(false);
+  const [deleteMode, setDeleteMode] = useState(false);
+  const [swipedId, setSwipedId] = useState<string | null>(null);
 
   // Long-press drag sort state
   const [activeDragId, setActiveDragId] = useState<string | null>(null);
@@ -677,7 +681,10 @@ function LibraryTab({ templates, items, onEditItem, onDeleteItem, onQuantityChan
   const origCenters = useRef<number[]>([]);
   const rowRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   const listRef = useRef<HTMLDivElement>(null);
-  const justDragged = useRef<string | null>(null);
+  const didDrag = useRef(false);
+
+  // Swipe state
+  const swipeRef = useRef<{ itemId: string; startX: number; startY: number; active: boolean } | null>(null);
 
   const filtered = useMemo(() => {
     return items.filter((item) => {
@@ -705,9 +712,11 @@ function LibraryTab({ templates, items, onEditItem, onDeleteItem, onQuantityChan
   };
 
   const initDrag = (e: React.PointerEvent, item: Item, idx: number) => {
+    if (!sortMode) return;
     const y = e.clientY;
     const pid = e.pointerId;
     dragStartY.current = y;
+    didDrag.current = false;
     lpTimer.current = setTimeout(() => {
       const el = rowRefs.current.get(item.id);
       dragItemH.current = (el?.getBoundingClientRect().height ?? 80) + 12;
@@ -716,6 +725,7 @@ function LibraryTab({ templates, items, onEditItem, onDeleteItem, onQuantityChan
         return r ? r.getBoundingClientRect().top + r.getBoundingClientRect().height / 2 : 0;
       });
       dragFromIdx.current = idx;
+      didDrag.current = true;
       try { listRef.current?.setPointerCapture(pid); } catch { /* */ }
       setActiveDragId(item.id);
       setDropIndex(idx);
@@ -724,6 +734,7 @@ function LibraryTab({ templates, items, onEditItem, onDeleteItem, onQuantityChan
   };
 
   const onDragMove = (e: React.PointerEvent) => {
+    if (!sortMode) return;
     if (!activeDragId) {
       if (lpTimer.current && Math.abs(e.clientY - dragStartY.current) > 10) {
         clearTimeout(lpTimer.current);
@@ -747,10 +758,14 @@ function LibraryTab({ templates, items, onEditItem, onDeleteItem, onQuantityChan
   const endDrag = () => {
     clearTimeout(lpTimer.current);
     lpTimer.current = undefined;
-    if (activeDragId && dropIndex !== null && dropIndex !== dragFromIdx.current) {
-      handleReorder(dragFromIdx.current, dropIndex);
-      justDragged.current = activeDragId;
-      requestAnimationFrame(() => { justDragged.current = null; });
+    if (activeDragId) {
+      if (dropIndex !== null && dropIndex !== dragFromIdx.current) {
+        handleReorder(dragFromIdx.current, dropIndex);
+      }
+      // Suppress click after drag
+      setTimeout(() => { didDrag.current = false; }, 300);
+    } else {
+      didDrag.current = false;
     }
     setActiveDragId(null);
     setDragDeltaY(0);
@@ -770,8 +785,43 @@ function LibraryTab({ templates, items, onEditItem, onDeleteItem, onQuantityChan
     return { transition: 'transform 0.15s ease' };
   };
 
+  // Swipe handlers (only when not in sort mode)
+  const onSwipeStart = (e: React.PointerEvent, itemId: string) => {
+    if (sortMode) return;
+    swipeRef.current = { itemId, startX: e.clientX, startY: e.clientY, active: false };
+  };
+
+  const onSwipeMove = (e: React.PointerEvent) => {
+    if (sortMode || !swipeRef.current) return;
+    const dx = e.clientX - swipeRef.current.startX;
+    const dy = e.clientY - swipeRef.current.startY;
+    if (!swipeRef.current.active) {
+      if (Math.abs(dx) > 12 && Math.abs(dx) > Math.abs(dy)) {
+        swipeRef.current.active = true;
+        e.preventDefault();
+      } else if (Math.abs(dy) > 12) {
+        swipeRef.current = null;
+        return;
+      }
+    }
+    if (swipeRef.current?.active && dx < 0) {
+      e.preventDefault();
+    }
+  };
+
+  const onSwipeEnd = (e: React.PointerEvent, itemId: string) => {
+    if (!swipeRef.current) return;
+    const dx = e.clientX - swipeRef.current.startX;
+    if (swipeRef.current.active && dx < -50) {
+      setSwipedId(itemId);
+    } else if (swipeRef.current.active && dx > 20) {
+      setSwipedId(null);
+    }
+    swipeRef.current = null;
+  };
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" onClick={() => swipedId && setSwipedId(null)}>
       {/* Search */}
       <div className="relative flex items-center">
         <Search size={18} className="absolute left-3 text-slate-400 pointer-events-none" />
@@ -805,33 +855,71 @@ function LibraryTab({ templates, items, onEditItem, onDeleteItem, onQuantityChan
         </div>
       )}
 
-      {/* Items — long-press to drag and reorder */}
+      {/* Sort / Delete mode toolbar */}
+      <div className="flex items-center justify-end gap-2">
+        <button
+          onClick={() => { setSortMode(!sortMode); setDeleteMode(false); setSwipedId(null); }}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border transition-colors ${sortMode ? 'bg-amber-500 border-amber-500 text-white' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400'}`}
+        >
+          <GripVertical size={13} />
+          並べ替え
+        </button>
+        <button
+          onClick={() => { setDeleteMode(!deleteMode); setSortMode(false); setSwipedId(null); }}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border transition-colors ${deleteMode ? 'bg-red-500 border-red-500 text-white' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400'}`}
+        >
+          <Trash2 size={13} />
+          削除
+        </button>
+      </div>
+
+      {/* Items */}
       <div
         ref={listRef}
         className="space-y-3"
         style={{ touchAction: activeDragId ? 'none' : 'auto', userSelect: 'none' }}
-        onPointerMove={onDragMove}
-        onPointerUp={endDrag}
-        onPointerCancel={endDrag}
+        onPointerMove={sortMode ? onDragMove : undefined}
+        onPointerUp={sortMode ? endDrag : undefined}
+        onPointerCancel={sortMode ? endDrag : undefined}
       >
         {filtered.map((item, index) => {
           const template = templates.find((t) => t.id === item.templateId);
           const isDragging = activeDragId === item.id;
+          const isSwiped = swipedId === item.id;
           return (
             <div
               key={item.id}
               ref={(el) => { if (el) rowRefs.current.set(item.id, el); else rowRefs.current.delete(item.id); }}
               style={getRowStyle(item.id, index)}
-              className="flex items-center gap-2"
-              onPointerDown={(e) => initDrag(e, item, index)}
-              onPointerCancel={() => { clearTimeout(lpTimer.current); lpTimer.current = undefined; }}
+              className="relative overflow-hidden rounded-[2rem]"
+              onPointerDown={(e) => { if (sortMode) initDrag(e, item, index); else onSwipeStart(e, item.id); }}
+              onPointerMove={!sortMode ? onSwipeMove : undefined}
+              onPointerUp={!sortMode ? (e) => onSwipeEnd(e, item.id) : undefined}
+              onPointerCancel={!sortMode ? () => { swipeRef.current = null; } : undefined}
             >
-              {/* Card */}
+              {/* Swipe delete button (revealed behind card) */}
+              <div className="absolute right-0 top-0 bottom-0 w-20 bg-red-500 flex items-center justify-center rounded-r-[2rem]">
+                <button
+                  onClick={(e) => { e.stopPropagation(); if (window.confirm('アイテムを削除しますか？')) { onDeleteItem(item.id); setSwipedId(null); } }}
+                  className="flex flex-col items-center gap-1"
+                >
+                  <Trash2 size={20} className="text-white" />
+                  <span className="text-white text-[10px] font-bold">削除</span>
+                </button>
+              </div>
+
+              {/* Card (slides left on swipe) */}
               <div
-                className={`flex-1 bg-white dark:bg-slate-800 p-4 rounded-[2rem] shadow-sm border cursor-pointer select-none transition-shadow
+                style={{ transform: isSwiped ? 'translateX(-80px)' : 'translateX(0)', transition: 'transform 0.25s ease' }}
+                className={`bg-white dark:bg-slate-800 p-4 rounded-[2rem] shadow-sm border cursor-pointer select-none transition-shadow
                   ${isDragging ? 'border-amber-400 ring-2 ring-amber-300/40 shadow-2xl' : 'border-slate-100 dark:border-slate-700'}
+                  ${deleteMode ? 'border-red-100 dark:border-red-900/30' : ''}
                 `}
-                onClick={() => { if (justDragged.current === item.id) return; onEditItem(item); }}
+                onClick={(e) => {
+                  if (didDrag.current) { e.preventDefault(); return; }
+                  if (isSwiped) { setSwipedId(null); return; }
+                  onEditItem(item);
+                }}
               >
                 <div className="flex items-start gap-4">
                   <div className="w-12 h-12 bg-slate-50 dark:bg-slate-700 rounded-2xl flex items-center justify-center flex-shrink-0">
@@ -849,12 +937,23 @@ function LibraryTab({ templates, items, onEditItem, onDeleteItem, onQuantityChan
                       )}
                     </div>
                   </div>
-                  {/* Quantity controls */}
-                  <div className="flex items-center bg-slate-50 dark:bg-slate-700 rounded-2xl p-1 self-center flex-shrink-0" onClick={(e) => e.stopPropagation()}>
-                    <button onClick={(e) => { e.stopPropagation(); onQuantityChange(item.id, -1); }} className="p-1"><MinusCircle size={18} className="text-slate-400" /></button>
-                    <span className="w-6 text-center font-bold text-sm text-slate-800 dark:text-white">{item.quantity || 0}</span>
-                    <button onClick={(e) => { e.stopPropagation(); onQuantityChange(item.id, 1); }} className="p-1"><PlusCircle size={18} className="text-slate-400" /></button>
-                  </div>
+                  {/* Quantity controls — hidden in delete mode */}
+                  {!deleteMode && (
+                    <div className="flex items-center bg-slate-50 dark:bg-slate-700 rounded-2xl p-1 self-center flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+                      <button onClick={(e) => { e.stopPropagation(); onQuantityChange(item.id, -1); }} className="p-1"><MinusCircle size={18} className="text-slate-400" /></button>
+                      <span className="w-6 text-center font-bold text-sm text-slate-800 dark:text-white">{item.quantity || 0}</span>
+                      <button onClick={(e) => { e.stopPropagation(); onQuantityChange(item.id, 1); }} className="p-1"><PlusCircle size={18} className="text-slate-400" /></button>
+                    </div>
+                  )}
+                  {/* Delete mode button */}
+                  {deleteMode && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); if (window.confirm('アイテムを削除しますか？')) onDeleteItem(item.id); }}
+                      className="p-2 self-center flex-shrink-0 bg-red-50 dark:bg-red-900/30 rounded-xl"
+                    >
+                      <Trash2 size={18} className="text-red-500" />
+                    </button>
+                  )}
                 </div>
                 {/* Attribute chips */}
                 {item.attributes && Object.keys(item.attributes).some((k) => item.attributes[k]) && (
@@ -888,13 +987,6 @@ function LibraryTab({ templates, items, onEditItem, onDeleteItem, onQuantityChan
                   </div>
                 )}
               </div>
-              {/* Delete */}
-              <button
-                onClick={(e) => { e.stopPropagation(); if (!activeDragId && window.confirm('アイテムを削除しますか？')) onDeleteItem(item.id); }}
-                className="p-2 text-slate-300 hover:text-red-400 transition-colors flex-shrink-0"
-              >
-                <Trash2 size={16} />
-              </button>
             </div>
           );
         })}
@@ -923,6 +1015,10 @@ interface TemplatesTabProps {
 }
 
 function TemplatesTab({ templates, onCreateTemplate, onEditTemplate, onDeleteTemplate, onShowPresets, onReorderTemplates }: TemplatesTabProps) {
+  const [sortMode, setSortMode] = useState(false);
+  const [deleteMode, setDeleteMode] = useState(false);
+  const [swipedId, setSwipedId] = useState<string | null>(null);
+
   // Long-press drag sort state
   const [activeDragId, setActiveDragId] = useState<string | null>(null);
   const [dragDeltaY, setDragDeltaY] = useState(0);
@@ -934,7 +1030,10 @@ function TemplatesTab({ templates, onCreateTemplate, onEditTemplate, onDeleteTem
   const origCenters = useRef<number[]>([]);
   const rowRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   const listRef = useRef<HTMLDivElement>(null);
-  const justDragged = useRef<string | null>(null);
+  const didDrag = useRef(false);
+
+  // Swipe state
+  const swipeRef = useRef<{ itemId: string; startX: number; startY: number; active: boolean } | null>(null);
 
   const handleReorder = (fromIdx: number, toIdx: number) => {
     if (fromIdx === toIdx) return;
@@ -945,9 +1044,11 @@ function TemplatesTab({ templates, onCreateTemplate, onEditTemplate, onDeleteTem
   };
 
   const initDrag = (e: React.PointerEvent, t: Template, idx: number) => {
+    if (!sortMode) return;
     const y = e.clientY;
     const pid = e.pointerId;
     dragStartY.current = y;
+    didDrag.current = false;
     lpTimer.current = setTimeout(() => {
       const el = rowRefs.current.get(t.id);
       dragItemH.current = (el?.getBoundingClientRect().height ?? 80) + 12;
@@ -956,6 +1057,7 @@ function TemplatesTab({ templates, onCreateTemplate, onEditTemplate, onDeleteTem
         return r ? r.getBoundingClientRect().top + r.getBoundingClientRect().height / 2 : 0;
       });
       dragFromIdx.current = idx;
+      didDrag.current = true;
       try { listRef.current?.setPointerCapture(pid); } catch { /* */ }
       setActiveDragId(t.id);
       setDropIndex(idx);
@@ -964,6 +1066,7 @@ function TemplatesTab({ templates, onCreateTemplate, onEditTemplate, onDeleteTem
   };
 
   const onDragMove = (e: React.PointerEvent) => {
+    if (!sortMode) return;
     if (!activeDragId) {
       if (lpTimer.current && Math.abs(e.clientY - dragStartY.current) > 10) {
         clearTimeout(lpTimer.current);
@@ -987,10 +1090,13 @@ function TemplatesTab({ templates, onCreateTemplate, onEditTemplate, onDeleteTem
   const endDrag = () => {
     clearTimeout(lpTimer.current);
     lpTimer.current = undefined;
-    if (activeDragId && dropIndex !== null && dropIndex !== dragFromIdx.current) {
-      handleReorder(dragFromIdx.current, dropIndex);
-      justDragged.current = activeDragId;
-      requestAnimationFrame(() => { justDragged.current = null; });
+    if (activeDragId) {
+      if (dropIndex !== null && dropIndex !== dragFromIdx.current) {
+        handleReorder(dragFromIdx.current, dropIndex);
+      }
+      setTimeout(() => { didDrag.current = false; }, 300);
+    } else {
+      didDrag.current = false;
     }
     setActiveDragId(null);
     setDragDeltaY(0);
@@ -1010,8 +1116,37 @@ function TemplatesTab({ templates, onCreateTemplate, onEditTemplate, onDeleteTem
     return { transition: 'transform 0.15s ease' };
   };
 
+  const onSwipeStart = (e: React.PointerEvent, itemId: string) => {
+    if (sortMode) return;
+    swipeRef.current = { itemId, startX: e.clientX, startY: e.clientY, active: false };
+  };
+
+  const onSwipeMove = (e: React.PointerEvent) => {
+    if (sortMode || !swipeRef.current) return;
+    const dx = e.clientX - swipeRef.current.startX;
+    const dy = e.clientY - swipeRef.current.startY;
+    if (!swipeRef.current.active) {
+      if (Math.abs(dx) > 12 && Math.abs(dx) > Math.abs(dy)) {
+        swipeRef.current.active = true;
+        e.preventDefault();
+      } else if (Math.abs(dy) > 12) {
+        swipeRef.current = null;
+        return;
+      }
+    }
+    if (swipeRef.current?.active && dx < 0) e.preventDefault();
+  };
+
+  const onSwipeEnd = (e: React.PointerEvent, itemId: string) => {
+    if (!swipeRef.current) return;
+    const dx = e.clientX - swipeRef.current.startX;
+    if (swipeRef.current.active && dx < -50) setSwipedId(itemId);
+    else if (swipeRef.current.active && dx > 20) setSwipedId(null);
+    swipeRef.current = null;
+  };
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" onClick={() => swipedId && setSwipedId(null)}>
       {/* Header */}
       <div className="flex items-center justify-between px-1">
         <h2 className="text-lg font-bold text-slate-800 dark:text-white">テンプレート管理</h2>
@@ -1027,32 +1162,70 @@ function TemplatesTab({ templates, onCreateTemplate, onEditTemplate, onDeleteTem
         </div>
       </div>
 
-      {/* Templates list — long-press to drag and reorder */}
+      {/* Sort / Delete mode toolbar */}
+      <div className="flex items-center justify-end gap-2">
+        <button
+          onClick={() => { setSortMode(!sortMode); setDeleteMode(false); setSwipedId(null); }}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border transition-colors ${sortMode ? 'bg-amber-500 border-amber-500 text-white' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400'}`}
+        >
+          <GripVertical size={13} />
+          並べ替え
+        </button>
+        <button
+          onClick={() => { setDeleteMode(!deleteMode); setSortMode(false); setSwipedId(null); }}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border transition-colors ${deleteMode ? 'bg-red-500 border-red-500 text-white' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400'}`}
+        >
+          <Trash2 size={13} />
+          削除
+        </button>
+      </div>
+
+      {/* Templates list */}
       <div
         ref={listRef}
         className="space-y-3"
         style={{ touchAction: activeDragId ? 'none' : 'auto', userSelect: 'none' }}
-        onPointerMove={onDragMove}
-        onPointerUp={endDrag}
-        onPointerCancel={endDrag}
+        onPointerMove={sortMode ? onDragMove : undefined}
+        onPointerUp={sortMode ? endDrag : undefined}
+        onPointerCancel={sortMode ? endDrag : undefined}
       >
         {templates.map((template, index) => {
           const isDragging = activeDragId === template.id;
+          const isSwiped = swipedId === template.id;
           return (
             <div
               key={template.id}
               ref={(el) => { if (el) rowRefs.current.set(template.id, el); else rowRefs.current.delete(template.id); }}
               style={getRowStyle(template.id, index)}
-              className="flex items-center gap-2"
-              onPointerDown={(e) => initDrag(e, template, index)}
-              onPointerCancel={() => { clearTimeout(lpTimer.current); lpTimer.current = undefined; }}
+              className="relative overflow-hidden rounded-3xl"
+              onPointerDown={(e) => { if (sortMode) initDrag(e, template, index); else onSwipeStart(e, template.id); }}
+              onPointerMove={!sortMode ? onSwipeMove : undefined}
+              onPointerUp={!sortMode ? (e) => onSwipeEnd(e, template.id) : undefined}
+              onPointerCancel={!sortMode ? () => { swipeRef.current = null; } : undefined}
             >
-              {/* Card */}
+              {/* Swipe delete button */}
+              <div className="absolute right-0 top-0 bottom-0 w-20 bg-red-500 flex items-center justify-center rounded-r-3xl">
+                <button
+                  onClick={(e) => { e.stopPropagation(); if (window.confirm('このテンプレートを削除しますか？関連するアイテムもすべて削除されます。')) { onDeleteTemplate(template.id); setSwipedId(null); } }}
+                  className="flex flex-col items-center gap-1"
+                >
+                  <Trash2 size={20} className="text-white" />
+                  <span className="text-white text-[10px] font-bold">削除</span>
+                </button>
+              </div>
+
+              {/* Card (slides left on swipe) */}
               <button
-                className={`flex-1 bg-white dark:bg-slate-800 p-4 rounded-3xl border select-none flex items-center justify-between transition-all
+                style={{ transform: isSwiped ? 'translateX(-80px)' : 'translateX(0)', transition: 'transform 0.25s ease' }}
+                className={`w-full bg-white dark:bg-slate-800 p-4 rounded-3xl border select-none flex items-center justify-between transition-shadow
                   ${isDragging ? 'border-amber-400 ring-2 ring-amber-300/40 shadow-2xl' : 'border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md'}
+                  ${deleteMode ? 'border-red-100 dark:border-red-900/30' : ''}
                 `}
-                onClick={() => { if (justDragged.current === template.id) return; onEditTemplate(template); }}
+                onClick={() => {
+                  if (didDrag.current) return;
+                  if (isSwiped) { setSwipedId(null); return; }
+                  onEditTemplate(template);
+                }}
               >
                 <div className="flex items-center gap-3 flex-1 min-w-0">
                   <div className="p-2.5 bg-amber-50 dark:bg-slate-700 rounded-2xl flex-shrink-0">
@@ -1063,14 +1236,16 @@ function TemplatesTab({ templates, onCreateTemplate, onEditTemplate, onDeleteTem
                     <p className="text-[10px] text-slate-400 font-bold mt-1">{template.subLocations?.length || 0} 階層 / {template.attributes?.length || 0} 属性</p>
                   </div>
                 </div>
-                <ChevronRight size={18} className="text-slate-200 flex-shrink-0" />
-              </button>
-              {/* Delete */}
-              <button
-                onClick={(e) => { e.stopPropagation(); if (!activeDragId && window.confirm('このテンプレートを削除しますか？関連するアイテムもすべて削除されます。')) onDeleteTemplate(template.id); }}
-                className="p-2 text-slate-300 hover:text-red-400 transition-colors flex-shrink-0"
-              >
-                <Trash2 size={16} />
+                {deleteMode ? (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); if (window.confirm('このテンプレートを削除しますか？関連するアイテムもすべて削除されます。')) onDeleteTemplate(template.id); }}
+                    className="p-2 bg-red-50 dark:bg-red-900/30 rounded-xl flex-shrink-0"
+                  >
+                    <Trash2 size={18} className="text-red-500" />
+                  </button>
+                ) : (
+                  <ChevronRight size={18} className="text-slate-200 flex-shrink-0" />
+                )}
               </button>
             </div>
           );
