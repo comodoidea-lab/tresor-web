@@ -72,8 +72,9 @@ export function useData(userId: string | null) {
 
   const saveTemplate = async (template: Template) => {
     if (!userId) return;
+    const data = { ...template, sortOrder: template.sortOrder ?? templates.length };
     const ref = doc(db, 'users', userId, 'templates', template.id);
-    await setDoc(ref, JSON.parse(JSON.stringify(template)));
+    await setDoc(ref, data);
   };
 
   const deleteTemplate = async (templateId: string) => {
@@ -92,8 +93,9 @@ export function useData(userId: string | null) {
 
   const saveItem = async (item: Item) => {
     if (!userId) return;
+    const data = { ...item, sortOrder: item.sortOrder ?? items.length };
     const ref = doc(db, 'users', userId, 'items', item.id);
-    await setDoc(ref, JSON.parse(JSON.stringify(item)));
+    await setDoc(ref, data);
   };
 
   const deleteItem = async (itemId: string) => {
