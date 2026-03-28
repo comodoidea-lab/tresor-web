@@ -200,8 +200,8 @@ function TutorialModal({ onClose }: { onClose: () => void }) {
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60">
-      <div className="bg-white dark:bg-slate-900 w-full max-w-sm rounded-[3rem] p-8 shadow-xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60" onClick={onClose}>
+      <div className="bg-white dark:bg-slate-900 w-full max-w-sm rounded-[3rem] p-8 shadow-xl" onClick={(e) => e.stopPropagation()}>
         <div className="flex justify-center py-4">{steps[step].icon}</div>
         <div className="space-y-2 text-center mt-2">
           <h2 className="text-xl font-black text-slate-800 dark:text-white">{steps[step].title}</h2>
@@ -249,6 +249,8 @@ function ItemEditorModal({ item, templates, defaultTemplateId, onSave, onClose, 
   const [quantity, setQuantity] = useState(item?.quantity ?? 1);
   const [subLocation, setSubLocation] = useState(item?.subLocation ?? '');
   const [attributes, setAttributes] = useState<Record<string, string>>(item?.attributes ?? {});
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
 
   const template = templates.find((t) => t.id === templateId);
 
@@ -259,32 +261,39 @@ function ItemEditorModal({ item, templates, defaultTemplateId, onSave, onClose, 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [templateId]);
 
-  const handleSave = () => {
-    if (!name.trim()) return;
-    const now = Date.now();
-    onSave({ id: item?.id ?? generateId(), templateId, name: name.trim(), quantity, subLocation, attributes, createdAt: item?.createdAt ?? now, updatedAt: now, sortOrder: item?.sortOrder });
+  const handleSave = async () => {
+    if (!name.trim()) { setError('アイテム名を入力してください'); return; }
+    setSaving(true);
+    setError('');
+    try {
+      const now = Date.now();
+      await onSave({ id: item?.id ?? generateId(), templateId, name: name.trim(), quantity, subLocation, attributes, createdAt: item?.createdAt ?? now, updatedAt: now, sortOrder: item?.sortOrder });
+    } catch (e) {
+      setError('保存に失敗しました。もう一度お試しください。');
+      console.error(e);
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const attrTypeLabels: Record<string, string> = { text: 'テキスト', number: '数値', date: '日付', tag: 'タグ', url: 'URL', checkbox: 'チェック' };
-
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
-      <div className={`relative w-full sm:max-w-lg max-h-[90vh] overflow-y-auto rounded-t-3xl sm:rounded-3xl shadow-2xl ${isDark ? 'bg-slate-800' : 'bg-white'}`}>
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={onClose}>
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm pointer-events-none" />
+      <div className={`relative z-10 w-full sm:max-w-lg max-h-[90vh] overflow-y-auto rounded-t-3xl sm:rounded-3xl shadow-2xl ${isDark ? 'bg-slate-800' : 'bg-white'}`} onClick={(e) => e.stopPropagation()}>
         <div className="sticky top-0 z-10 flex items-center justify-between px-6 pt-6 pb-4 border-b border-slate-200 dark:border-slate-700 bg-inherit rounded-t-3xl">
           <h2 className="text-lg font-bold text-slate-800 dark:text-white">{item ? 'アイテム編集' : 'モノを登録'}</h2>
           <button onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors"><X size={20} className="text-slate-500" /></button>
         </div>
         <div className="p-6 space-y-5">
           <div>
-            <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2 block">アイテム名 *</label>
-            <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="アイテム名を入力" className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-2xl text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 font-medium" autoFocus />
-          </div>
-          <div>
             <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2 block">テンプレート</label>
             <select value={templateId} onChange={(e) => { setTemplateId(e.target.value); const tpl = templates.find((t) => t.id === e.target.value); setSubLocation(tpl?.subLocations[0] ?? ''); setAttributes({}); }} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-2xl text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-400 font-medium">
               {templates.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
             </select>
+          </div>
+          <div>
+            <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2 block">アイテム名 *</label>
+            <input type="text" value={name} onChange={(e) => { setName(e.target.value); setError(''); }} placeholder="アイテム名を入力" className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-2xl text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 font-medium" autoFocus />
           </div>
           <div>
             <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2 block">数量</label>
@@ -329,9 +338,10 @@ function ItemEditorModal({ item, templates, defaultTemplateId, onSave, onClose, 
             </div>
           )}
         </div>
+        {error && <p className="px-6 pb-2 text-red-500 text-sm font-bold">{error}</p>}
         <div className="sticky bottom-0 flex gap-3 px-6 pb-6 pt-4 bg-inherit border-t border-slate-200 dark:border-slate-700">
           <button onClick={onClose} className="flex-1 py-3 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold rounded-2xl hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">キャンセル</button>
-          <button onClick={handleSave} disabled={!name.trim()} className="flex-1 py-3 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-2xl transition-colors disabled:opacity-50">{item ? '保存する' : '追加する'}</button>
+          <button onClick={handleSave} disabled={saving} className="flex-1 py-3 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-2xl transition-colors disabled:opacity-60">{saving ? '保存中...' : item ? '保存する' : '追加する'}</button>
         </div>
       </div>
     </div>
@@ -353,6 +363,8 @@ function TemplateEditorModal({ template, onSave, onClose, isDark }: TemplateEdit
   const [name, setName] = useState(template?.name ?? '');
   const [subLocations, setSubLocations] = useState<string[]>(template?.subLocations ?? ['']);
   const [attributes, setAttributes] = useState<Template['attributes']>(template?.attributes ?? []);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
 
   const addSubLocation = () => setSubLocations([...subLocations, '']);
   const updateSubLocation = (i: number, val: string) => { const u = [...subLocations]; u[i] = val; setSubLocations(u); };
@@ -361,18 +373,27 @@ function TemplateEditorModal({ template, onSave, onClose, isDark }: TemplateEdit
   const updateAttribute = (i: number, field: 'name' | 'type', val: string) => { const u = [...attributes]; u[i] = field === 'type' ? { ...u[i], type: val as Template['attributes'][0]['type'] } : { ...u[i], name: val }; setAttributes(u); };
   const removeAttribute = (i: number) => setAttributes(attributes.filter((_, idx) => idx !== i));
 
-  const handleSave = () => {
-    if (!name.trim()) return;
-    const now = Date.now();
-    onSave({ id: template?.id ?? generateId(), name: name.trim(), subLocations: subLocations.filter((s) => s.trim()), attributes: attributes.filter((a) => a.name.trim()), createdAt: template?.createdAt ?? now, updatedAt: now, sortOrder: template?.sortOrder });
+  const handleSave = async () => {
+    if (!name.trim()) { setError('テンプレート名を入力してください'); return; }
+    setSaving(true);
+    setError('');
+    try {
+      const now = Date.now();
+      await onSave({ id: template?.id ?? generateId(), name: name.trim(), subLocations: subLocations.filter((s) => s.trim()), attributes: attributes.filter((a) => a.name.trim()), createdAt: template?.createdAt ?? now, updatedAt: now, sortOrder: template?.sortOrder });
+    } catch (e) {
+      setError('保存に失敗しました。もう一度お試しください。');
+      console.error(e);
+    } finally {
+      setSaving(false);
+    }
   };
 
   const attrTypeLabels: Record<string, string> = { text: 'テキスト', number: '数値', date: '日付', tag: 'タグ', url: 'URL', checkbox: 'チェック' };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
-      <div className={`relative w-full sm:max-w-lg max-h-[90vh] overflow-y-auto rounded-t-3xl sm:rounded-3xl shadow-2xl ${isDark ? 'bg-slate-800' : 'bg-white'}`}>
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={onClose}>
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm pointer-events-none" />
+      <div className={`relative z-10 w-full sm:max-w-lg max-h-[90vh] overflow-y-auto rounded-t-3xl sm:rounded-3xl shadow-2xl ${isDark ? 'bg-slate-800' : 'bg-white'}`} onClick={(e) => e.stopPropagation()}>
         <div className="sticky top-0 z-10 flex items-center justify-between px-6 pt-6 pb-4 border-b border-slate-200 dark:border-slate-700 bg-inherit rounded-t-3xl">
           <h2 className="text-lg font-bold text-slate-800 dark:text-white">{template ? 'テンプレートを編集' : 'テンプレートを作成'}</h2>
           <button onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors"><X size={20} className="text-slate-500" /></button>
@@ -380,7 +401,7 @@ function TemplateEditorModal({ template, onSave, onClose, isDark }: TemplateEdit
         <div className="p-6 space-y-6">
           <div>
             <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2 block">テンプレート名 *</label>
-            <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="例: 冷蔵庫" className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-2xl text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 font-medium" autoFocus />
+            <input type="text" value={name} onChange={(e) => { setName(e.target.value); setError(''); }} placeholder="例: 冷蔵庫" className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-2xl text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 font-medium" autoFocus />
           </div>
           <div>
             <div className="flex items-center justify-between mb-2">
@@ -414,9 +435,10 @@ function TemplateEditorModal({ template, onSave, onClose, isDark }: TemplateEdit
             </div>
           </div>
         </div>
+        {error && <p className="px-6 pb-2 text-red-500 text-sm font-bold">{error}</p>}
         <div className="sticky bottom-0 flex gap-3 px-6 pb-6 pt-4 bg-inherit border-t border-slate-200 dark:border-slate-700">
           <button onClick={onClose} className="flex-1 py-3 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold rounded-2xl hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">キャンセル</button>
-          <button onClick={handleSave} disabled={!name.trim()} className="flex-1 py-3 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-2xl transition-colors disabled:opacity-50">{template ? '保存する' : '作成する'}</button>
+          <button onClick={handleSave} disabled={saving} className="flex-1 py-3 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-2xl transition-colors disabled:opacity-60">{saving ? '保存中...' : template ? '保存する' : '作成する'}</button>
         </div>
       </div>
     </div>
@@ -436,9 +458,9 @@ interface PresetSelectionModalProps {
 function PresetSelectionModal({ onSelect, onClose, isDark }: PresetSelectionModalProps) {
   const icons: Record<string, string> = { '冷蔵庫': '🧊', '引き出し・棚': '📦', '商品在庫': '🏷️', '本棚': '📚', 'デジタル資産': '💻', '買い物リスト': '🛒', 'アイデアノート': '💡' };
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
-      <div className={`relative w-full sm:max-w-md max-h-[80vh] overflow-y-auto rounded-t-3xl sm:rounded-3xl shadow-2xl ${isDark ? 'bg-slate-800' : 'bg-white'}`}>
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={onClose}>
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm pointer-events-none" />
+      <div className={`relative z-10 w-full sm:max-w-md max-h-[80vh] overflow-y-auto rounded-t-3xl sm:rounded-3xl shadow-2xl ${isDark ? 'bg-slate-800' : 'bg-white'}`} onClick={(e) => e.stopPropagation()}>
         <div className="sticky top-0 z-10 flex items-center justify-between px-6 pt-6 pb-4 border-b border-slate-200 dark:border-slate-700 bg-inherit rounded-t-3xl">
           <h2 className="text-lg font-bold text-slate-800 dark:text-white">プリセットから選択</h2>
           <button onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors"><X size={20} className="text-slate-500" /></button>
