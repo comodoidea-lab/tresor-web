@@ -160,6 +160,18 @@ export function useData(userId: string | null) {
     await setDoc(ref, s);
   };
 
+  const saveFcmToken = async (token: string) => {
+    if (!userId) return;
+    const hash = token.slice(-20);
+    await setDoc(doc(db, 'users', userId, 'fcmTokens', hash), { token, createdAt: Date.now() });
+  };
+
+  const deleteFcmToken = async (token: string) => {
+    if (!userId) return;
+    const hash = token.slice(-20);
+    await deleteDoc(doc(db, 'users', userId, 'fcmTokens', hash));
+  };
+
   return {
     templates,
     items,
@@ -174,5 +186,7 @@ export function useData(userId: string | null) {
     reorderTemplates,
     deleteAllData,
     saveSettings,
+    saveFcmToken,
+    deleteFcmToken,
   };
 }

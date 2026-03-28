@@ -9,7 +9,7 @@ import {
   createUserWithEmailAndPassword,
   signOut,
 } from 'firebase/auth';
-import { auth, googleProvider } from '@/lib/firebase';
+import { auth, googleProvider, getFirebaseMessaging } from '@/lib/firebase';
 import { useAuth } from '@/hooks/useAuth';
 import { useData } from '@/hooks/useData';
 import { Template, Item, PRESET_TEMPLATES, Settings } from '@/types';
@@ -1268,10 +1268,20 @@ interface SettingsTabProps {
   isDark: boolean;
   userEmail?: string | null;
   userName?: string | null;
+  userId?: string;
+  onSaveFcmToken: (token: string) => Promise<void>;
+  onDeleteFcmToken: (token: string) => Promise<void>;
 }
 
-function SettingsTab({ settings, onUpdateSettings, templates, items, onDeleteAllData, isDark, userEmail, userName }: SettingsTabProps) {
+function SettingsTab({ settings, onUpdateSettings, templates, items, onDeleteAllData, isDark, userEmail, userName, onSaveFcmToken, onDeleteFcmToken }: SettingsTabProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [notifPermission, setNotifPermission] = useState<'default' | 'granted' | 'denied' | 'loading'>(() => {
+    if (typeof Notification !== 'undefined') {
+      return Notification.permission as 'default' | 'granted' | 'denied';
+    }
+    return 'default';
+  });
+  const [currentFcmToken, setCurrentFcmToken] = useState<string | null>(null);
 
   const handleImportCSV = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -1283,6 +1293,48 @@ function SettingsTab({ settings, onUpdateSettings, templates, items, onDeleteAll
     if (window.confirm('🚨 全データリセット\n\n登録したアイテムとテンプレートがすべて削除されます。元に戻せません。本当に実行しますか？')) {
       onDeleteAllData();
     }
+  };
+
+  const handleEnableNotifications = async () => {
+    setNotifPermission('loading');
+    try {
+      const { getToken } = await import('firebase/messaging');
+      const messaging = getFirebaseMessaging();
+      if (!messaging) {
+        setNotifPermission('default');
+        return;
+      }
+      const permission = await Notification.requestPermission();
+      if (permission !== 'granted') {
+        setNotifPermission(permission as 'denied' | 'default');
+        return;
+      }
+      setNotifPermission('granted');
+      const swReg = await navigator.serviceWorker.getRegistration('/firebase-messaging-sw.js');
+      const token = await getToken(messaging, {
+        vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY,
+        serviceWorkerRegistration: swReg,
+      });
+      if (token) {
+        setCurrentFcmToken(token);
+        await onSaveFcmToken(token);
+      }
+    } catch (err) {
+      console.error('Failed to enable notifications:', err);
+      setNotifPermission('default');
+    }
+  };
+
+  const handleDisableNotifications = async () => {
+    if (currentFcmToken) {
+      try {
+        await onDeleteFcmToken(currentFcmToken);
+      } catch (err) {
+        console.error('Failed to delete FCM token:', err);
+      }
+      setCurrentFcmToken(null);
+    }
+    setNotifPermission('default');
   };
 
   return (
@@ -1306,6 +1358,55 @@ function SettingsTab({ settings, onUpdateSettings, templates, items, onDeleteAll
             <LogOut size={20} className="text-slate-400" />
             <span className="font-bold">ログアウト</span>
           </button>
+        </div>
+      </div>
+
+      {/* Push Notifications */}
+      <div className="space-y-3">
+        <p className="text-xs font-bold text-slate-400 ml-2">通知</p>
+        <div className="bg-white dark:bg-slate-800 rounded-3xl overflow-hidden border border-slate-100 dark:border-slate-700 p-4 space-y-3">
+          <div className="flex items-start gap-3">
+            <Bell size={20} className="text-amber-600 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="font-bold text-slate-700 dark:text-slate-200 text-sm">プッシュ通知</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+                期限が近づいたアイテムをお知らせします。通知にはブラウザが開いているか、PWAとしてインストールされている必要があります。
+              </p>
+            </div>
+          </div>
+          {notifPermission === 'default' && (
+            <button
+              onClick={handleEnableNotifications}
+              className="w-full py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-2xl text-sm transition-colors"
+            >
+              通知を有効にする
+            </button>
+          )}
+          {notifPermission === 'loading' && (
+            <button disabled className="w-full py-2.5 bg-amber-400 text-white font-bold rounded-2xl text-sm opacity-70 cursor-wait">
+              設定中...
+            </button>
+          )}
+          {notifPermission === 'granted' && (
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 px-1">
+                <Check size={16} className="text-green-500" />
+                <span className="text-sm font-bold text-green-600 dark:text-green-400">通知が有効です</span>
+              </div>
+              <button
+                onClick={handleDisableNotifications}
+                className="w-full py-2.5 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 font-bold rounded-2xl text-sm transition-colors"
+              >
+                無効にする
+              </button>
+            </div>
+          )}
+          {notifPermission === 'denied' && (
+            <div className="flex items-center gap-2 px-1 py-1">
+              <AlertCircle size={16} className="text-red-500 flex-shrink-0" />
+              <p className="text-xs text-red-500 font-medium">ブラウザの設定から通知を許可してください</p>
+            </div>
+          )}
         </div>
       </div>
 
@@ -1393,7 +1494,7 @@ type Tab = 'dashboard' | 'library' | 'templates' | 'settings';
 
 export default function HomePage() {
   const { user, loading: authLoading } = useAuth();
-  const { templates, items, loading: dataLoading, settings: firestoreSettings, saveTemplate, deleteTemplate, saveItem, deleteItem, updateQuantity, reorderItems, reorderTemplates, deleteAllData, saveSettings } = useData(user?.uid ?? null);
+  const { templates, items, loading: dataLoading, settings: firestoreSettings, saveTemplate, deleteTemplate, saveItem, deleteItem, updateQuantity, reorderItems, reorderTemplates, deleteAllData, saveSettings, saveFcmToken, deleteFcmToken } = useData(user?.uid ?? null);
 
   const DEFAULT_SETTINGS: Settings = { theme: 'system', notificationDaysBefore: 7, notificationHour: 9 };
   const [localSettings, setLocalSettings] = useState<Settings>(() => {
@@ -1571,6 +1672,9 @@ export default function HomePage() {
                 isDark={isDark}
                 userEmail={user.email}
                 userName={user.displayName}
+                userId={user.uid}
+                onSaveFcmToken={saveFcmToken}
+                onDeleteFcmToken={deleteFcmToken}
               />
             )}
           </div>

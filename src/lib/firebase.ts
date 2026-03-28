@@ -1,6 +1,7 @@
 import { initializeApp, getApps, type FirebaseApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, type Auth } from 'firebase/auth';
 import { initializeFirestore, getFirestore, type Firestore } from 'firebase/firestore';
+import { getMessaging, type Messaging } from 'firebase/messaging';
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY ?? 'placeholder',
@@ -30,6 +31,19 @@ export function getFirebaseDb(): Firestore {
     }
   }
   return _db;
+}
+
+let _messaging: Messaging | null = null;
+export function getFirebaseMessaging(): Messaging | null {
+  if (typeof window === 'undefined') return null;
+  if (!_messaging) {
+    try {
+      _messaging = getMessaging(getFirebaseApp());
+    } catch {
+      return null;
+    }
+  }
+  return _messaging;
 }
 
 export const googleProvider = new GoogleAuthProvider();
