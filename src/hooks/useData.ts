@@ -11,12 +11,13 @@ import {
   orderBy,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { Template, Item } from '@/types';
+import { Template, Item, Settings } from '@/types';
 
 export function useData(userId: string | null) {
   const [templates, setTemplates] = useState<Template[]>([]);
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
+  const [settings, setSettings] = useState<Settings | null>(null);
 
   useEffect(() => {
     if (!userId) {
@@ -30,6 +31,7 @@ export function useData(userId: string | null) {
 
     const templatesRef = collection(db, 'users', userId, 'templates');
     const itemsRef = collection(db, 'users', userId, 'items');
+    const settingsRef = doc(db, 'users', userId, 'settings', 'default');
 
     const unsubTemplates = onSnapshot(
       query(templatesRef, orderBy('sortOrder', 'asc')),
@@ -64,9 +66,16 @@ export function useData(userId: string | null) {
       }
     );
 
+    const unsubSettings = onSnapshot(settingsRef, (snapshot) => {
+      if (snapshot.exists()) {
+        setSettings(snapshot.data() as Settings);
+      }
+    });
+
     return () => {
       unsubTemplates();
       unsubItems();
+      unsubSettings();
     };
   }, [userId]);
 
@@ -145,10 +154,17 @@ export function useData(userId: string | null) {
     await batch.commit();
   };
 
+  const saveSettings = async (s: Settings) => {
+    if (!userId) return;
+    const ref = doc(db, 'users', userId, 'settings', 'default');
+    await setDoc(ref, s);
+  };
+
   return {
     templates,
     items,
     loading,
+    settings,
     saveTemplate,
     deleteTemplate,
     saveItem,
@@ -157,5 +173,6 @@ export function useData(userId: string | null) {
     reorderItems,
     reorderTemplates,
     deleteAllData,
+    saveSettings,
   };
 }

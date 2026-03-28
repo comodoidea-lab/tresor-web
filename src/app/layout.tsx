@@ -15,7 +15,7 @@ export const metadata: Metadata = {
   },
   icons: {
     shortcut: '/icon-192.png',
-    apple: '/icon-192.png',
+    apple: [{ url: '/apple-touch-icon.png', sizes: '180x180' }],
   },
 };
 
@@ -35,7 +35,7 @@ export default function RootLayout({
   return (
     <html lang="ja">
       <head>
-        <link rel="apple-touch-icon" href="/icon-192.png" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />

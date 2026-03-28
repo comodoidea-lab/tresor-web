@@ -15,6 +15,7 @@ export interface Item {
   quantity: number;
   subLocation: string;
   attributes: Record<string, string>;
+  note?: string;
   createdAt: number;
   updatedAt: number;
   sortOrder?: number;

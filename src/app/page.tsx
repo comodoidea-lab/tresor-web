@@ -248,6 +248,7 @@ function ItemEditorModal({ item, templates, defaultTemplateId, onSave, onClose, 
   const [quantity, setQuantity] = useState(item?.quantity ?? 1);
   const [subLocation, setSubLocation] = useState(item?.subLocation ?? '');
   const [attributes, setAttributes] = useState<Record<string, string>>(item?.attributes ?? {});
+  const [note, setNote] = useState(item?.note ?? '');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
@@ -266,7 +267,7 @@ function ItemEditorModal({ item, templates, defaultTemplateId, onSave, onClose, 
     setError('');
     try {
       const now = Date.now();
-      await onSave({ id: item?.id ?? generateId(), templateId, name: name.trim(), quantity, subLocation, attributes, createdAt: item?.createdAt ?? now, updatedAt: now, sortOrder: item?.sortOrder });
+      await onSave({ id: item?.id ?? generateId(), templateId, name: name.trim(), quantity, subLocation, attributes, note: note.trim() || undefined, createdAt: item?.createdAt ?? now, updatedAt: now, sortOrder: item?.sortOrder });
     } catch (e) {
       setError('保存に失敗しました。もう一度お試しください。');
       console.error(e);
@@ -336,6 +337,17 @@ function ItemEditorModal({ item, templates, defaultTemplateId, onSave, onClose, 
               ))}
             </div>
           )}
+          {/* Note field — always visible, multiline */}
+          <div>
+            <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2 block">ノート</label>
+            <textarea
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              placeholder="自由にメモを記入できます（改行可）"
+              rows={4}
+              className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-2xl text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 font-medium text-sm resize-none leading-relaxed"
+            />
+          </div>
         </div>
         {error && <p className="px-6 pb-2 text-red-500 text-sm font-bold">{error}</p>}
         <div className="sticky bottom-0 flex gap-3 px-6 pb-6 pt-4 bg-inherit border-t border-slate-200 dark:border-slate-700">
@@ -869,6 +881,12 @@ function LibraryTab({ templates, items, onEditItem, onDeleteItem, onQuantityChan
                     })}
                   </div>
                 )}
+                {/* Note */}
+                {item.note && (
+                  <div className="border-t border-slate-50 dark:border-slate-700 pt-3 mt-3">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 whitespace-pre-wrap leading-relaxed">{item.note}</p>
+                  </div>
+                )}
               </div>
               {/* Delete */}
               <button
@@ -1208,9 +1226,19 @@ type Tab = 'dashboard' | 'library' | 'templates' | 'settings';
 
 export default function HomePage() {
   const { user, loading: authLoading } = useAuth();
-  const { templates, items, loading: dataLoading, saveTemplate, deleteTemplate, saveItem, deleteItem, updateQuantity, reorderItems, reorderTemplates, deleteAllData } = useData(user?.uid ?? null);
+  const { templates, items, loading: dataLoading, settings: firestoreSettings, saveTemplate, deleteTemplate, saveItem, deleteItem, updateQuantity, reorderItems, reorderTemplates, deleteAllData, saveSettings } = useData(user?.uid ?? null);
 
-  const [settings, setSettings] = useState<Settings>({ theme: 'system', notificationDaysBefore: 7, notificationHour: 9 });
+  const DEFAULT_SETTINGS: Settings = { theme: 'system', notificationDaysBefore: 7, notificationHour: 9 };
+  const [localSettings, setLocalSettings] = useState<Settings>(() => {
+    if (typeof window === 'undefined') return DEFAULT_SETTINGS;
+    const saved = localStorage.getItem('tresor-settings');
+    if (saved) { try { return JSON.parse(saved); } catch { /* ignore */ } }
+    return DEFAULT_SETTINGS;
+  });
+
+  // Merge Firestore settings when they arrive (Firestore takes precedence)
+  const settings: Settings = firestoreSettings ?? localSettings;
+
   const [tab, setTab] = useState<Tab>('dashboard');
   const [showTutorial, setShowTutorial] = useState(false);
   const [showItemEditor, setShowItemEditor] = useState(false);
@@ -1220,12 +1248,6 @@ export default function HomePage() {
   const [editingTemplate, setEditingTemplate] = useState<Template | null>(null);
   const [showPresets, setShowPresets] = useState(false);
   const [isDark, setIsDark] = useState(false);
-
-  // Load settings
-  useEffect(() => {
-    const saved = localStorage.getItem('tresor-settings');
-    if (saved) { try { setSettings(JSON.parse(saved)); } catch { /* ignore */ } }
-  }, []);
 
   // Show tutorial for new users (no templates, tutorial not done)
   useEffect(() => {
@@ -1250,7 +1272,10 @@ export default function HomePage() {
   }, [settings.theme]);
 
   const updateSettings = (partial: Partial<Settings>) => {
-    setSettings((prev) => { const next = { ...prev, ...partial }; localStorage.setItem('tresor-settings', JSON.stringify(next)); return next; });
+    const next = { ...settings, ...partial };
+    setLocalSettings(next);
+    localStorage.setItem('tresor-settings', JSON.stringify(next));
+    saveSettings(next).catch(console.error);
   };
 
   const handleSaveItem = async (item: Item) => { await saveItem(item); setShowItemEditor(false); setEditingItem(null); };
