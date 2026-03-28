@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import {
   signInWithPopup,
   signInWithEmailAndPassword,
@@ -15,29 +15,38 @@ import { useData } from '@/hooks/useData';
 import { Template, Item, PRESET_TEMPLATES, Settings } from '@/types';
 import {
   LayoutDashboard,
-  BookOpen,
+  Library,
   Layers,
   Settings as SettingsIcon,
   Plus,
   Search,
   LogOut,
   X,
-  ChevronDown,
-  ChevronUp,
+  ChevronRight,
   ExternalLink,
   Trash2,
-  Edit3,
-  Package,
-  Bell,
-  Sun,
-  Moon,
-  Monitor,
   Download,
   Upload,
-  RefreshCw,
+  Sun,
+  Moon,
+  Smartphone,
   Check,
-  AlertTriangle,
+  Bell,
+  Box,
+  MapPin,
+  Hash,
   Tag,
+  ArrowRight,
+  AlertCircle,
+  Sparkles,
+  PlusCircle,
+  MinusCircle,
+  Clock,
+  BookOpen,
+  Filter,
+  GripVertical,
+  CheckSquare,
+  Square,
 } from 'lucide-react';
 
 // ============================================================
@@ -50,16 +59,10 @@ function generateId(): string {
 
 function getGreeting(): string {
   const h = new Date().getHours();
-  if (h < 12) return 'おはようございます';
-  if (h < 18) return 'こんにちは';
+  if (h < 5) return '夜更かしですか？';
+  if (h < 11) return 'おはようございます';
+  if (h < 17) return 'こんにちは';
   return 'こんばんは';
-}
-
-function formatDate(dateStr: string): string {
-  if (!dateStr) return '';
-  const d = new Date(dateStr);
-  if (isNaN(d.getTime())) return dateStr;
-  return `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}`;
 }
 
 function getDaysUntil(dateStr: string): number | null {
@@ -72,21 +75,18 @@ function getDaysUntil(dateStr: string): number | null {
   return Math.ceil((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 }
 
+function formatDate(dateStr: string): string {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return dateStr;
+  return `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}`;
+}
+
 function exportToCSV(templates: Template[], items: Item[]) {
   const header = ['id', 'templateId', 'templateName', 'name', 'quantity', 'subLocation', 'attributes', 'createdAt', 'updatedAt'];
   const rows = items.map((item) => {
     const tpl = templates.find((t) => t.id === item.templateId);
-    return [
-      item.id,
-      item.templateId,
-      tpl?.name ?? '',
-      item.name,
-      item.quantity,
-      item.subLocation,
-      JSON.stringify(item.attributes),
-      new Date(item.createdAt).toISOString(),
-      new Date(item.updatedAt).toISOString(),
-    ];
+    return [item.id, item.templateId, tpl?.name ?? '', item.name, item.quantity, item.subLocation, JSON.stringify(item.attributes), new Date(item.createdAt).toISOString(), new Date(item.updatedAt).toISOString()];
   });
   const csv = [header, ...rows].map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
   const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
@@ -114,7 +114,7 @@ function LoginPage() {
     setLoading(true);
     try {
       await signInWithPopup(auth, googleProvider);
-    } catch (e: unknown) {
+    } catch {
       setError('Googleログインに失敗しました');
     } finally {
       setLoading(false);
@@ -122,10 +122,7 @@ function LoginPage() {
   };
 
   const handleEmail = async () => {
-    if (!email || !password) {
-      setError('メールアドレスとパスワードを入力してください');
-      return;
-    }
+    if (!email || !password) { setError('メールアドレスとパスワードを入力してください'); return; }
     setError('');
     setLoading(true);
     try {
@@ -153,84 +150,81 @@ function LoginPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 to-amber-100 dark:from-slate-900 dark:to-slate-800 flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
-        {/* Logo */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-20 h-20 bg-amber-500 rounded-3xl mb-4 shadow-lg">
             <span className="text-white text-3xl font-bold">t</span>
           </div>
-          <h1 className="text-4xl font-bold text-amber-600 dark:text-amber-400 tracking-tight">trésor</h1>
+          <h1 className="text-4xl font-bold text-amber-600 dark:text-amber-400 tracking-tight italic">trésor</h1>
           <p className="text-slate-500 dark:text-slate-400 mt-2 text-sm font-medium">管理を、もっとシンプルに。</p>
         </div>
-
         <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-xl p-6">
-          {/* Google Sign In */}
-          <button
-            onClick={handleGoogle}
-            disabled={loading}
-            className="w-full flex items-center justify-center gap-3 py-3 px-4 border-2 border-slate-200 dark:border-slate-600 rounded-2xl font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors disabled:opacity-50"
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24">
-              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-            </svg>
+          <button onClick={handleGoogle} disabled={loading} className="w-full flex items-center justify-center gap-3 py-3 px-4 border-2 border-slate-200 dark:border-slate-600 rounded-2xl font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors disabled:opacity-50">
+            <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
             Googleでログイン
           </button>
-
           <div className="flex items-center gap-3 my-5">
             <div className="flex-1 h-px bg-slate-200 dark:bg-slate-600" />
             <span className="text-slate-400 text-xs font-medium">または</span>
             <div className="flex-1 h-px bg-slate-200 dark:bg-slate-600" />
           </div>
-
-          {/* Tabs */}
           <div className="flex bg-slate-100 dark:bg-slate-700 rounded-2xl p-1 mb-4">
-            <button
-              onClick={() => setTab('signin')}
-              className={`flex-1 py-2 rounded-xl text-sm font-bold transition-colors ${tab === 'signin' ? 'bg-white dark:bg-slate-600 text-amber-600 shadow-sm' : 'text-slate-500 dark:text-slate-400'}`}
-            >
-              ログイン
-            </button>
-            <button
-              onClick={() => setTab('signup')}
-              className={`flex-1 py-2 rounded-xl text-sm font-bold transition-colors ${tab === 'signup' ? 'bg-white dark:bg-slate-600 text-amber-600 shadow-sm' : 'text-slate-500 dark:text-slate-400'}`}
-            >
-              新規登録
-            </button>
+            <button onClick={() => setTab('signin')} className={`flex-1 py-2 rounded-xl text-sm font-bold transition-colors ${tab === 'signin' ? 'bg-white dark:bg-slate-600 text-amber-600 shadow-sm' : 'text-slate-500 dark:text-slate-400'}`}>ログイン</button>
+            <button onClick={() => setTab('signup')} className={`flex-1 py-2 rounded-xl text-sm font-bold transition-colors ${tab === 'signup' ? 'bg-white dark:bg-slate-600 text-amber-600 shadow-sm' : 'text-slate-500 dark:text-slate-400'}`}>新規登録</button>
           </div>
-
           <div className="space-y-3">
-            <input
-              type="email"
-              placeholder="メールアドレス"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleEmail()}
-              className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-2xl text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 font-medium"
-            />
-            <input
-              type="password"
-              placeholder="パスワード"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleEmail()}
-              className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-2xl text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 font-medium"
-            />
+            <input type="email" placeholder="メールアドレス" value={email} onChange={(e) => setEmail(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleEmail()} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-2xl text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 font-medium" />
+            <input type="password" placeholder="パスワード" value={password} onChange={(e) => setPassword(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleEmail()} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-2xl text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 font-medium" />
             {error && <p className="text-red-500 text-xs font-medium px-1">{error}</p>}
-            <button
-              onClick={handleEmail}
-              disabled={loading}
-              className="w-full py-3 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-2xl transition-colors disabled:opacity-50"
-            >
+            <button onClick={handleEmail} disabled={loading} className="w-full py-3 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-2xl transition-colors disabled:opacity-50">
               {loading ? '処理中...' : tab === 'signin' ? 'ログイン' : 'アカウント作成'}
             </button>
           </div>
         </div>
+        <p className="text-center text-slate-400 text-xs mt-6">© 2024 trésor — あなただけの宝箱</p>
+      </div>
+    </div>
+  );
+}
 
-        <p className="text-center text-slate-400 text-xs mt-6">
-          © 2024 trésor — あなただけの宝箱
-        </p>
+// ============================================================
+// TUTORIAL MODAL
+// ============================================================
+
+function TutorialModal({ onClose }: { onClose: () => void }) {
+  const [step, setStep] = useState(0);
+  const steps = [
+    { title: 'trésor（トレゾール）へようこそ', desc: '身の回りのあらゆるモノを「あなた専用の型」で管理できる魔法の宝箱です。', icon: <Sparkles size={48} className="text-amber-500" /> },
+    { title: '1. テンプレート（型）を作る', desc: '「テンプレート」タブから、管理したいモノの型を作ります。項目を自由に決められます。', icon: <Layers size={48} className="text-amber-500" /> },
+    { title: '2. モノを登録する', desc: '「ライブラリ」から、モノを登録します。型を選ぶだけで、最適な入力欄が現れます。', icon: <PlusCircle size={48} className="text-amber-500" /> },
+    { title: '3. タグで賢く整理', desc: '「#仕事」などのタグを付けると、一覧からワンタップで絞り込めます。', icon: <Hash size={48} className="text-amber-500" /> },
+  ];
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60">
+      <div className="bg-white dark:bg-slate-900 w-full max-w-sm rounded-[3rem] p-8 shadow-xl">
+        <div className="flex justify-center py-4">{steps[step].icon}</div>
+        <div className="space-y-2 text-center mt-2">
+          <h2 className="text-xl font-black text-slate-800 dark:text-white">{steps[step].title}</h2>
+          <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">{steps[step].desc}</p>
+        </div>
+        <div className="flex justify-center gap-2 pt-6">
+          {steps.map((_, i) => (
+            <div key={i} className={`h-1.5 rounded-full transition-all ${i === step ? 'w-8 bg-amber-500' : 'w-2 bg-slate-200 dark:bg-slate-700'}`} />
+          ))}
+        </div>
+        <div className="flex gap-4 pt-6">
+          {step > 0 && (
+            <button onClick={() => setStep(step - 1)} className="flex-1 py-3.5 bg-slate-100 dark:bg-slate-800 rounded-2xl font-bold text-slate-600 dark:text-slate-300">
+              戻る
+            </button>
+          )}
+          <button
+            onClick={() => { if (step < steps.length - 1) setStep(step + 1); else onClose(); }}
+            className="flex-1 py-3.5 bg-amber-600 rounded-2xl font-bold text-white shadow-sm"
+          >
+            {step < steps.length - 1 ? '次へ' : 'はじめる！'}
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -262,158 +256,69 @@ function ItemEditorModal({ item, templates, defaultTemplateId, onSave, onClose, 
     if (!item && template && !subLocation) {
       setSubLocation(template.subLocations[0] ?? '');
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [templateId]);
 
   const handleSave = () => {
     if (!name.trim()) return;
     const now = Date.now();
-    onSave({
-      id: item?.id ?? generateId(),
-      templateId,
-      name: name.trim(),
-      quantity,
-      subLocation,
-      attributes,
-      createdAt: item?.createdAt ?? now,
-      updatedAt: now,
-      sortOrder: item?.sortOrder,
-    });
+    onSave({ id: item?.id ?? generateId(), templateId, name: name.trim(), quantity, subLocation, attributes, createdAt: item?.createdAt ?? now, updatedAt: now, sortOrder: item?.sortOrder });
   };
+
+  const attrTypeLabels: Record<string, string> = { text: 'テキスト', number: '数値', date: '日付', tag: 'タグ', url: 'URL', checkbox: 'チェック' };
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
       <div className={`relative w-full sm:max-w-lg max-h-[90vh] overflow-y-auto rounded-t-3xl sm:rounded-3xl shadow-2xl ${isDark ? 'bg-slate-800' : 'bg-white'}`}>
-        {/* Header */}
         <div className="sticky top-0 z-10 flex items-center justify-between px-6 pt-6 pb-4 border-b border-slate-200 dark:border-slate-700 bg-inherit rounded-t-3xl">
-          <h2 className="text-lg font-bold text-slate-800 dark:text-white">
-            {item ? 'アイテムを編集' : 'アイテムを追加'}
-          </h2>
-          <button onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors">
-            <X size={20} className="text-slate-500" />
-          </button>
+          <h2 className="text-lg font-bold text-slate-800 dark:text-white">{item ? 'アイテム編集' : 'モノを登録'}</h2>
+          <button onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors"><X size={20} className="text-slate-500" /></button>
         </div>
-
         <div className="p-6 space-y-5">
-          {/* Name */}
           <div>
             <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2 block">アイテム名 *</label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="アイテム名を入力"
-              className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-2xl text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 font-medium"
-              autoFocus
-            />
+            <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="アイテム名を入力" className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-2xl text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 font-medium" autoFocus />
           </div>
-
-          {/* Template */}
           <div>
             <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2 block">テンプレート</label>
-            <select
-              value={templateId}
-              onChange={(e) => {
-                setTemplateId(e.target.value);
-                const tpl = templates.find((t) => t.id === e.target.value);
-                setSubLocation(tpl?.subLocations[0] ?? '');
-                setAttributes({});
-              }}
-              className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-2xl text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-400 font-medium"
-            >
-              {templates.map((t) => (
-                <option key={t.id} value={t.id}>{t.name}</option>
-              ))}
+            <select value={templateId} onChange={(e) => { setTemplateId(e.target.value); const tpl = templates.find((t) => t.id === e.target.value); setSubLocation(tpl?.subLocations[0] ?? ''); setAttributes({}); }} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-2xl text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-400 font-medium">
+              {templates.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
             </select>
           </div>
-
-          {/* Quantity */}
           <div>
             <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2 block">数量</label>
             <div className="flex items-center gap-4">
-              <button
-                onClick={() => setQuantity(Math.max(0, quantity - 1))}
-                className="w-10 h-10 flex items-center justify-center bg-slate-100 dark:bg-slate-700 rounded-full text-slate-600 dark:text-slate-300 font-bold text-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
-              >
-                −
-              </button>
-              <input
-                type="number"
-                value={quantity}
-                onChange={(e) => setQuantity(Math.max(0, parseInt(e.target.value) || 0))}
-                className="w-20 text-center px-2 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-800 dark:text-white font-bold focus:outline-none focus:ring-2 focus:ring-amber-400"
-              />
-              <button
-                onClick={() => setQuantity(quantity + 1)}
-                className="w-10 h-10 flex items-center justify-center bg-amber-100 dark:bg-amber-900/30 rounded-full text-amber-600 font-bold text-lg hover:bg-amber-200 dark:hover:bg-amber-900/50 transition-colors"
-              >
-                +
-              </button>
+              <button onClick={() => setQuantity(Math.max(0, quantity - 1))} className="w-10 h-10 flex items-center justify-center bg-slate-100 dark:bg-slate-700 rounded-full text-slate-600 dark:text-slate-300 font-bold text-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">−</button>
+              <input type="number" value={quantity} onChange={(e) => setQuantity(Math.max(0, parseInt(e.target.value) || 0))} className="w-20 text-center px-2 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-800 dark:text-white font-bold focus:outline-none focus:ring-2 focus:ring-amber-400" />
+              <button onClick={() => setQuantity(quantity + 1)} className="w-10 h-10 flex items-center justify-center bg-amber-100 dark:bg-amber-900/30 rounded-full text-amber-600 font-bold text-lg hover:bg-amber-200 dark:hover:bg-amber-900/50 transition-colors">+</button>
             </div>
           </div>
-
-          {/* Sub Location */}
           {template && template.subLocations.length > 0 && (
             <div>
               <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2 block">保管場所</label>
               <div className="flex flex-wrap gap-2">
                 {template.subLocations.map((loc) => (
-                  <button
-                    key={loc}
-                    onClick={() => setSubLocation(loc)}
-                    className={`px-3 py-1.5 rounded-full text-sm font-bold transition-colors ${subLocation === loc ? 'bg-amber-500 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'}`}
-                  >
-                    {loc}
-                  </button>
+                  <button key={loc} onClick={() => setSubLocation(loc)} className={`px-3 py-1.5 rounded-full text-sm font-bold transition-colors ${subLocation === loc ? 'bg-amber-500 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'}`}>{loc}</button>
                 ))}
               </div>
             </div>
           )}
-
-          {/* Attributes */}
           {template && template.attributes.length > 0 && (
             <div className="space-y-4">
               <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide block">属性</label>
               {template.attributes.map((attr) => (
                 <div key={attr.name}>
                   <label className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5 block">{attr.name}</label>
-                  {attr.type === 'text' || attr.type === 'number' ? (
-                    <input
-                      type={attr.type === 'number' ? 'number' : 'text'}
-                      value={attributes[attr.name] ?? ''}
-                      onChange={(e) => setAttributes({ ...attributes, [attr.name]: e.target.value })}
-                      placeholder={attr.name}
-                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 font-medium"
-                    />
+                  {(attr.type === 'text' || attr.type === 'number' || attr.type === 'tag') ? (
+                    <input type={attr.type === 'number' ? 'number' : 'text'} value={attributes[attr.name] ?? ''} onChange={(e) => setAttributes({ ...attributes, [attr.name]: e.target.value })} placeholder={attr.name} className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 font-medium" />
                   ) : attr.type === 'date' ? (
-                    <input
-                      type="date"
-                      value={attributes[attr.name] ?? ''}
-                      onChange={(e) => setAttributes({ ...attributes, [attr.name]: e.target.value })}
-                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-400 font-medium"
-                    />
+                    <input type="date" value={attributes[attr.name] ?? ''} onChange={(e) => setAttributes({ ...attributes, [attr.name]: e.target.value })} className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-400 font-medium" />
                   ) : attr.type === 'url' ? (
-                    <input
-                      type="url"
-                      value={attributes[attr.name] ?? ''}
-                      onChange={(e) => setAttributes({ ...attributes, [attr.name]: e.target.value })}
-                      placeholder="https://..."
-                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 font-medium"
-                    />
-                  ) : attr.type === 'tag' ? (
-                    <input
-                      type="text"
-                      value={attributes[attr.name] ?? ''}
-                      onChange={(e) => setAttributes({ ...attributes, [attr.name]: e.target.value })}
-                      placeholder="タグを入力"
-                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 font-medium"
-                    />
+                    <input type="url" value={attributes[attr.name] ?? ''} onChange={(e) => setAttributes({ ...attributes, [attr.name]: e.target.value })} placeholder="https://..." className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 font-medium" />
                   ) : attr.type === 'checkbox' ? (
                     <label className="flex items-center gap-3 cursor-pointer">
-                      <div
-                        onClick={() => setAttributes({ ...attributes, [attr.name]: attributes[attr.name] === 'true' ? 'false' : 'true' })}
-                        className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-colors cursor-pointer ${attributes[attr.name] === 'true' ? 'bg-amber-500 border-amber-500' : 'border-slate-300 dark:border-slate-600'}`}
-                      >
+                      <div onClick={() => setAttributes({ ...attributes, [attr.name]: attributes[attr.name] === 'true' ? 'false' : 'true' })} className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-colors cursor-pointer ${attributes[attr.name] === 'true' ? 'bg-amber-500 border-amber-500' : 'border-slate-300 dark:border-slate-600'}`}>
                         {attributes[attr.name] === 'true' && <Check size={14} className="text-white" />}
                       </div>
                       <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{attr.name}</span>
@@ -424,22 +329,9 @@ function ItemEditorModal({ item, templates, defaultTemplateId, onSave, onClose, 
             </div>
           )}
         </div>
-
-        {/* Footer */}
         <div className="sticky bottom-0 flex gap-3 px-6 pb-6 pt-4 bg-inherit border-t border-slate-200 dark:border-slate-700">
-          <button
-            onClick={onClose}
-            className="flex-1 py-3 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold rounded-2xl hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
-          >
-            キャンセル
-          </button>
-          <button
-            onClick={handleSave}
-            disabled={!name.trim()}
-            className="flex-1 py-3 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-2xl transition-colors disabled:opacity-50"
-          >
-            {item ? '保存する' : '追加する'}
-          </button>
+          <button onClick={onClose} className="flex-1 py-3 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold rounded-2xl hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">キャンセル</button>
+          <button onClick={handleSave} disabled={!name.trim()} className="flex-1 py-3 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-2xl transition-colors disabled:opacity-50">{item ? '保存する' : '追加する'}</button>
         </div>
       </div>
     </div>
@@ -463,76 +355,33 @@ function TemplateEditorModal({ template, onSave, onClose, isDark }: TemplateEdit
   const [attributes, setAttributes] = useState<Template['attributes']>(template?.attributes ?? []);
 
   const addSubLocation = () => setSubLocations([...subLocations, '']);
-  const updateSubLocation = (i: number, val: string) => {
-    const updated = [...subLocations];
-    updated[i] = val;
-    setSubLocations(updated);
-  };
+  const updateSubLocation = (i: number, val: string) => { const u = [...subLocations]; u[i] = val; setSubLocations(u); };
   const removeSubLocation = (i: number) => setSubLocations(subLocations.filter((_, idx) => idx !== i));
-
   const addAttribute = () => setAttributes([...attributes, { name: '', type: 'text' }]);
-  const updateAttribute = (i: number, field: 'name' | 'type', val: string) => {
-    const updated = [...attributes];
-    if (field === 'type') {
-      updated[i] = { ...updated[i], type: val as Template['attributes'][0]['type'] };
-    } else {
-      updated[i] = { ...updated[i], name: val };
-    }
-    setAttributes(updated);
-  };
+  const updateAttribute = (i: number, field: 'name' | 'type', val: string) => { const u = [...attributes]; u[i] = field === 'type' ? { ...u[i], type: val as Template['attributes'][0]['type'] } : { ...u[i], name: val }; setAttributes(u); };
   const removeAttribute = (i: number) => setAttributes(attributes.filter((_, idx) => idx !== i));
 
   const handleSave = () => {
     if (!name.trim()) return;
     const now = Date.now();
-    onSave({
-      id: template?.id ?? generateId(),
-      name: name.trim(),
-      subLocations: subLocations.filter((s) => s.trim()),
-      attributes: attributes.filter((a) => a.name.trim()),
-      createdAt: template?.createdAt ?? now,
-      updatedAt: now,
-      sortOrder: template?.sortOrder,
-    });
+    onSave({ id: template?.id ?? generateId(), name: name.trim(), subLocations: subLocations.filter((s) => s.trim()), attributes: attributes.filter((a) => a.name.trim()), createdAt: template?.createdAt ?? now, updatedAt: now, sortOrder: template?.sortOrder });
   };
 
-  const attrTypeLabels: Record<string, string> = {
-    text: 'テキスト',
-    number: '数値',
-    date: '日付',
-    tag: 'タグ',
-    url: 'URL',
-    checkbox: 'チェック',
-  };
+  const attrTypeLabels: Record<string, string> = { text: 'テキスト', number: '数値', date: '日付', tag: 'タグ', url: 'URL', checkbox: 'チェック' };
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
       <div className={`relative w-full sm:max-w-lg max-h-[90vh] overflow-y-auto rounded-t-3xl sm:rounded-3xl shadow-2xl ${isDark ? 'bg-slate-800' : 'bg-white'}`}>
         <div className="sticky top-0 z-10 flex items-center justify-between px-6 pt-6 pb-4 border-b border-slate-200 dark:border-slate-700 bg-inherit rounded-t-3xl">
-          <h2 className="text-lg font-bold text-slate-800 dark:text-white">
-            {template ? 'テンプレートを編集' : 'テンプレートを作成'}
-          </h2>
-          <button onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors">
-            <X size={20} className="text-slate-500" />
-          </button>
+          <h2 className="text-lg font-bold text-slate-800 dark:text-white">{template ? 'テンプレートを編集' : 'テンプレートを作成'}</h2>
+          <button onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors"><X size={20} className="text-slate-500" /></button>
         </div>
-
         <div className="p-6 space-y-6">
-          {/* Name */}
           <div>
             <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2 block">テンプレート名 *</label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="例: 冷蔵庫"
-              className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-2xl text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 font-medium"
-              autoFocus
-            />
+            <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="例: 冷蔵庫" className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-2xl text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 font-medium" autoFocus />
           </div>
-
-          {/* Sub Locations */}
           <div>
             <div className="flex items-center justify-between mb-2">
               <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">保管場所</label>
@@ -541,22 +390,12 @@ function TemplateEditorModal({ template, onSave, onClose, isDark }: TemplateEdit
             <div className="space-y-2">
               {subLocations.map((loc, i) => (
                 <div key={i} className="flex gap-2">
-                  <input
-                    type="text"
-                    value={loc}
-                    onChange={(e) => updateSubLocation(i, e.target.value)}
-                    placeholder={`場所 ${i + 1}`}
-                    className="flex-1 px-4 py-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 font-medium text-sm"
-                  />
-                  <button onClick={() => removeSubLocation(i)} className="p-2 hover:bg-red-50 dark:hover:bg-red-900/20 text-slate-400 hover:text-red-500 rounded-xl transition-colors">
-                    <X size={16} />
-                  </button>
+                  <input type="text" value={loc} onChange={(e) => updateSubLocation(i, e.target.value)} placeholder={`場所 ${i + 1}`} className="flex-1 px-4 py-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 font-medium text-sm" />
+                  <button onClick={() => removeSubLocation(i)} className="p-2 hover:bg-red-50 dark:hover:bg-red-900/20 text-slate-400 hover:text-red-500 rounded-xl transition-colors"><X size={16} /></button>
                 </div>
               ))}
             </div>
           </div>
-
-          {/* Attributes */}
           <div>
             <div className="flex items-center justify-between mb-2">
               <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">属性</label>
@@ -565,42 +404,19 @@ function TemplateEditorModal({ template, onSave, onClose, isDark }: TemplateEdit
             <div className="space-y-2">
               {attributes.map((attr, i) => (
                 <div key={i} className="flex gap-2">
-                  <input
-                    type="text"
-                    value={attr.name}
-                    onChange={(e) => updateAttribute(i, 'name', e.target.value)}
-                    placeholder="属性名"
-                    className="flex-1 px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 font-medium text-sm"
-                  />
-                  <select
-                    value={attr.type}
-                    onChange={(e) => updateAttribute(i, 'type', e.target.value)}
-                    className="px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-amber-400 font-medium text-sm"
-                  >
-                    {Object.entries(attrTypeLabels).map(([val, label]) => (
-                      <option key={val} value={val}>{label}</option>
-                    ))}
+                  <input type="text" value={attr.name} onChange={(e) => updateAttribute(i, 'name', e.target.value)} placeholder="属性名" className="flex-1 px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 font-medium text-sm" />
+                  <select value={attr.type} onChange={(e) => updateAttribute(i, 'type', e.target.value)} className="px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-amber-400 font-medium text-sm">
+                    {Object.entries(attrTypeLabels).map(([val, label]) => <option key={val} value={val}>{label}</option>)}
                   </select>
-                  <button onClick={() => removeAttribute(i)} className="p-2 hover:bg-red-50 dark:hover:bg-red-900/20 text-slate-400 hover:text-red-500 rounded-xl transition-colors">
-                    <X size={16} />
-                  </button>
+                  <button onClick={() => removeAttribute(i)} className="p-2 hover:bg-red-50 dark:hover:bg-red-900/20 text-slate-400 hover:text-red-500 rounded-xl transition-colors"><X size={16} /></button>
                 </div>
               ))}
             </div>
           </div>
         </div>
-
         <div className="sticky bottom-0 flex gap-3 px-6 pb-6 pt-4 bg-inherit border-t border-slate-200 dark:border-slate-700">
-          <button onClick={onClose} className="flex-1 py-3 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold rounded-2xl hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">
-            キャンセル
-          </button>
-          <button
-            onClick={handleSave}
-            disabled={!name.trim()}
-            className="flex-1 py-3 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-2xl transition-colors disabled:opacity-50"
-          >
-            {template ? '保存する' : '作成する'}
-          </button>
+          <button onClick={onClose} className="flex-1 py-3 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold rounded-2xl hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">キャンセル</button>
+          <button onClick={handleSave} disabled={!name.trim()} className="flex-1 py-3 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-2xl transition-colors disabled:opacity-50">{template ? '保存する' : '作成する'}</button>
         </div>
       </div>
     </div>
@@ -618,33 +434,18 @@ interface PresetSelectionModalProps {
 }
 
 function PresetSelectionModal({ onSelect, onClose, isDark }: PresetSelectionModalProps) {
-  const icons: Record<string, string> = {
-    '冷蔵庫': '🧊',
-    '引き出し・棚': '📦',
-    '商品在庫': '🏷️',
-    '本棚': '📚',
-    'デジタル資産': '💻',
-    '買い物リスト': '🛒',
-    'アイデアノート': '💡',
-  };
-
+  const icons: Record<string, string> = { '冷蔵庫': '🧊', '引き出し・棚': '📦', '商品在庫': '🏷️', '本棚': '📚', 'デジタル資産': '💻', '買い物リスト': '🛒', 'アイデアノート': '💡' };
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
       <div className={`relative w-full sm:max-w-md max-h-[80vh] overflow-y-auto rounded-t-3xl sm:rounded-3xl shadow-2xl ${isDark ? 'bg-slate-800' : 'bg-white'}`}>
         <div className="sticky top-0 z-10 flex items-center justify-between px-6 pt-6 pb-4 border-b border-slate-200 dark:border-slate-700 bg-inherit rounded-t-3xl">
           <h2 className="text-lg font-bold text-slate-800 dark:text-white">プリセットから選択</h2>
-          <button onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors">
-            <X size={20} className="text-slate-500" />
-          </button>
+          <button onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors"><X size={20} className="text-slate-500" /></button>
         </div>
         <div className="p-6 grid grid-cols-2 gap-3">
           {PRESET_TEMPLATES.map((preset) => (
-            <button
-              key={preset.name}
-              onClick={() => onSelect(preset)}
-              className={`flex flex-col items-start p-4 rounded-2xl border-2 border-transparent hover:border-amber-400 transition-all text-left ${isDark ? 'bg-slate-700 hover:bg-slate-600' : 'bg-slate-50 hover:bg-amber-50'}`}
-            >
+            <button key={preset.name} onClick={() => onSelect(preset)} className={`flex flex-col items-start p-4 rounded-2xl border-2 border-transparent hover:border-amber-400 transition-all text-left ${isDark ? 'bg-slate-700 hover:bg-slate-600' : 'bg-slate-50 hover:bg-amber-50'}`}>
               <span className="text-2xl mb-2">{icons[preset.name] ?? '📋'}</span>
               <span className="font-bold text-slate-800 dark:text-white text-sm">{preset.name}</span>
               <span className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{preset.attributes.length}つの属性</span>
@@ -657,152 +458,6 @@ function PresetSelectionModal({ onSelect, onClose, isDark }: PresetSelectionModa
 }
 
 // ============================================================
-// ITEM CARD COMPONENT
-// ============================================================
-
-interface ItemCardProps {
-  item: Item;
-  template: Template | undefined;
-  onEdit: () => void;
-  onDelete: () => void;
-  onQuantityChange: (delta: number) => void;
-  isDark: boolean;
-}
-
-function ItemCard({ item, template, onEdit, onDelete, onQuantityChange, isDark }: ItemCardProps) {
-  const [showDelete, setShowDelete] = useState(false);
-
-  // Check for expiring attributes
-  const expiringAttrs = template?.attributes
-    .filter((a) => a.type === 'date')
-    .map((a) => ({ name: a.name, value: item.attributes[a.name], days: getDaysUntil(item.attributes[a.name] ?? '') }))
-    .filter((a) => a.days !== null && a.days <= 7) ?? [];
-
-  return (
-    <div className={`rounded-2xl shadow-sm border p-4 transition-all ${isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100'} ${expiringAttrs.length > 0 ? 'border-l-4 border-l-amber-400' : ''}`}>
-      {/* Top row */}
-      <div className="flex items-start justify-between gap-2 mb-3">
-        <div className="flex-1 min-w-0">
-          <h3 className="font-bold text-slate-800 dark:text-white truncate">{item.name}</h3>
-          <div className="flex items-center gap-2 mt-1">
-            {template && (
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded-full text-xs font-bold">
-                {template.name}
-              </span>
-            )}
-            {item.subLocation && (
-              <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">{item.subLocation}</span>
-            )}
-          </div>
-        </div>
-        <div className="flex gap-1 flex-shrink-0">
-          <button onClick={onEdit} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors">
-            <Edit3 size={15} className="text-slate-400" />
-          </button>
-          {showDelete ? (
-            <button onClick={onDelete} className="p-1.5 bg-red-100 dark:bg-red-900/30 rounded-lg transition-colors">
-              <Trash2 size={15} className="text-red-500" />
-            </button>
-          ) : (
-            <button onClick={() => setShowDelete(true)} className="p-1.5 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors">
-              <Trash2 size={15} className="text-slate-400 hover:text-red-400" />
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* Quantity */}
-      <div className="flex items-center gap-3 mb-3">
-        <button
-          onClick={() => onQuantityChange(-1)}
-          className="w-8 h-8 flex items-center justify-center bg-slate-100 dark:bg-slate-700 rounded-full text-slate-600 dark:text-slate-300 font-bold hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
-        >
-          −
-        </button>
-        <span className="font-bold text-slate-800 dark:text-white min-w-[2rem] text-center">{item.quantity}</span>
-        <button
-          onClick={() => onQuantityChange(1)}
-          className="w-8 h-8 flex items-center justify-center bg-amber-100 dark:bg-amber-900/30 rounded-full text-amber-600 font-bold hover:bg-amber-200 dark:hover:bg-amber-900/50 transition-colors"
-        >
-          +
-        </button>
-      </div>
-
-      {/* Attributes */}
-      {template && template.attributes.length > 0 && (
-        <div className="flex flex-wrap gap-2">
-          {template.attributes.map((attr) => {
-            const val = item.attributes[attr.name];
-            if (!val) return null;
-
-            if (attr.type === 'checkbox') {
-              return (
-                <span key={attr.name} className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold ${val === 'true' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-slate-100 dark:bg-slate-700 text-slate-500'}`}>
-                  {val === 'true' ? <Check size={10} /> : null}
-                  {attr.name}
-                </span>
-              );
-            }
-
-            if (attr.type === 'url') {
-              return (
-                <button
-                  key={attr.name}
-                  onClick={() => window.open(val, '_blank')}
-                  className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full text-xs font-bold hover:bg-blue-200 transition-colors"
-                >
-                  <ExternalLink size={10} />
-                  {attr.name}
-                </button>
-              );
-            }
-
-            if (attr.type === 'tag') {
-              return (
-                <span key={attr.name} className="inline-flex items-center gap-1 px-2 py-0.5 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 rounded-full text-xs font-bold">
-                  <Tag size={10} />
-                  {val}
-                </span>
-              );
-            }
-
-            if (attr.type === 'date') {
-              const days = getDaysUntil(val);
-              const isExpiring = days !== null && days <= 7;
-              const isExpired = days !== null && days < 0;
-              return (
-                <span key={attr.name} className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold ${isExpired ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400' : isExpiring ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400'}`}>
-                  {isExpiring && <AlertTriangle size={10} />}
-                  {attr.name}: {formatDate(val)}
-                  {days !== null && days >= 0 && days <= 7 && ` (あと${days}日)`}
-                  {isExpired && ' (期限切れ)'}
-                </span>
-              );
-            }
-
-            return (
-              <span key={attr.name} className="inline-flex items-center px-2 py-0.5 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 rounded-full text-xs font-bold">
-                {attr.name}: {val}
-              </span>
-            );
-          })}
-        </div>
-      )}
-
-      {/* Expiry warning */}
-      {expiringAttrs.length > 0 && (
-        <div className="mt-2 flex items-center gap-1 text-amber-600 dark:text-amber-400">
-          <Bell size={12} />
-          <span className="text-xs font-bold">
-            {expiringAttrs[0].days === 0 ? '今日期限' : expiringAttrs[0].days! < 0 ? `${Math.abs(expiringAttrs[0].days!)}日超過` : `あと${expiringAttrs[0].days}日`}
-          </span>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ============================================================
 // DASHBOARD TAB
 // ============================================================
 
@@ -810,124 +465,139 @@ interface DashboardTabProps {
   templates: Template[];
   items: Item[];
   onAddItem: () => void;
-  isDark: boolean;
-  notifyDaysBefore: number;
+  onShowTutorial: () => void;
+  onGoToLibrary: () => void;
+  onEditItem: (item: Item) => void;
 }
 
-function DashboardTab({ templates, items, onAddItem, isDark, notifyDaysBefore }: DashboardTabProps) {
+function DashboardTab({ templates, items, onAddItem, onShowTutorial, onGoToLibrary, onEditItem }: DashboardTabProps) {
   const greeting = getGreeting();
 
-  // Alert items (within notifyDaysBefore days)
-  const alertItems = items.filter((item) => {
-    const tpl = templates.find((t) => t.id === item.templateId);
-    if (!tpl) return false;
-    return tpl.attributes.some((attr) => {
-      if (attr.type !== 'date') return false;
-      const val = item.attributes[attr.name];
-      const days = getDaysUntil(val ?? '');
-      return days !== null && days <= notifyDaysBefore;
-    });
-  });
+  const alertItems = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const soon = new Date(today);
+    soon.setDate(today.getDate() + 7);
+    return items.filter((item) => {
+      if (!item.attributes) return false;
+      return Object.values(item.attributes).some((val) => {
+        const d = new Date(val);
+        return !isNaN(d.getTime()) && d >= today && d <= soon;
+      });
+    }).slice(0, 3);
+  }, [items]);
 
-  // Recent items (last 6)
-  const recentItems = [...items]
-    .sort((a, b) => b.updatedAt - a.updatedAt)
-    .slice(0, 6);
+  const recentItems = useMemo(() => items.slice(0, 4), [items]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Greeting */}
-      <div className={`rounded-3xl p-6 bg-gradient-to-br from-amber-400 to-amber-600`}>
-        <p className="text-amber-100 font-medium text-sm">{greeting}</p>
-        <h2 className="text-white text-2xl font-bold mt-1">trésor へようこそ</h2>
-        <p className="text-amber-100 text-sm mt-2">{new Date().toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+      <div>
+        <h2 className="text-2xl font-bold text-slate-800 dark:text-white">{greeting}</h2>
+        <p className="text-sm font-bold text-slate-500 dark:text-slate-400 mt-1">現在の管理状況をお知らせします。</p>
       </div>
 
-      {/* Stats */}
+      {/* Stats cards */}
       <div className="grid grid-cols-2 gap-4">
-        <div className={`rounded-2xl p-4 ${isDark ? 'bg-slate-800' : 'bg-white'} shadow-sm`}>
-          <div className="flex items-center gap-2 mb-2">
-            <Package size={16} className="text-amber-500" />
-            <span className="text-xs font-bold text-slate-500 dark:text-slate-400">アイテム総数</span>
+        <div className="bg-white dark:bg-slate-800 p-5 rounded-[2.5rem] border border-slate-100 dark:border-slate-700 h-32 flex flex-col justify-between overflow-hidden shadow-sm">
+          <Box size={24} className="text-amber-400" />
+          <div>
+            <p className="text-3xl font-black text-slate-800 dark:text-white leading-none">{items.length}</p>
+            <p className="text-[10px] font-bold text-slate-400 mt-1">アイテム総数</p>
           </div>
-          <p className="text-3xl font-bold text-slate-800 dark:text-white">{items.length}</p>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">個のアイテム</p>
         </div>
-        <div className={`rounded-2xl p-4 ${isDark ? 'bg-slate-800' : 'bg-white'} shadow-sm`}>
-          <div className="flex items-center gap-2 mb-2">
-            <Layers size={16} className="text-amber-500" />
-            <span className="text-xs font-bold text-slate-500 dark:text-slate-400">テンプレート数</span>
+        <div className="bg-white dark:bg-slate-800 p-5 rounded-[2.5rem] border border-slate-100 dark:border-slate-700 h-32 flex flex-col justify-between overflow-hidden shadow-sm">
+          <Layers size={24} className="text-slate-400" />
+          <div>
+            <p className="text-3xl font-black text-slate-800 dark:text-white leading-none">{templates.length}</p>
+            <p className="text-[10px] font-bold text-slate-400 mt-1">テンプレート</p>
           </div>
-          <p className="text-3xl font-bold text-slate-800 dark:text-white">{templates.length}</p>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">種類</p>
         </div>
       </div>
+
+      {/* Welcome card (when no templates) */}
+      {templates.length === 0 && (
+        <div className="bg-amber-500 p-6 rounded-[2.5rem] shadow-sm overflow-hidden relative">
+          <div className="absolute -right-2 -top-2 opacity-20 pointer-events-none">
+            <Sparkles size={80} className="text-white" />
+          </div>
+          <div className="flex items-center gap-2 mb-4">
+            <Sparkles size={20} className="text-white" />
+            <p className="text-lg font-bold text-white">使い方はかんたんです！</p>
+          </div>
+          <div className="space-y-3 mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-6 h-6 bg-white/30 rounded-full flex items-center justify-center flex-shrink-0">
+                <span className="text-xs font-bold text-white">1</span>
+              </div>
+              <p className="text-sm font-bold text-white">「テンプレート」で型を作る</p>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="w-6 h-6 bg-white/30 rounded-full flex items-center justify-center flex-shrink-0">
+                <span className="text-xs font-bold text-white">2</span>
+              </div>
+              <p className="text-sm font-bold text-white">「ライブラリ」から登録する</p>
+            </div>
+          </div>
+          <button onClick={onShowTutorial} className="w-full bg-white py-3 rounded-2xl font-bold text-amber-600 text-sm shadow-sm hover:bg-amber-50 transition-colors">
+            はじめてガイドを見る
+          </button>
+        </div>
+      )}
 
       {/* Alert items */}
       {alertItems.length > 0 && (
-        <div>
-          <div className="flex items-center gap-2 mb-3">
-            <Bell size={16} className="text-amber-500" />
-            <h3 className="font-bold text-slate-800 dark:text-white">期限アラート</h3>
-            <span className="text-xs bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-2 py-0.5 rounded-full font-bold">{alertItems.length}</span>
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <AlertCircle size={18} className="text-amber-600" />
+            <p className="font-bold text-xs text-amber-600">期限間近のアラート</p>
           </div>
           <div className="space-y-2">
-            {alertItems.slice(0, 3).map((item) => {
-              const tpl = templates.find((t) => t.id === item.templateId);
-              const dateAttr = tpl?.attributes.find((a) => a.type === 'date');
-              const val = dateAttr ? item.attributes[dateAttr.name] : null;
-              const days = val ? getDaysUntil(val) : null;
-              return (
-                <div key={item.id} className={`flex items-center justify-between px-4 py-3 rounded-2xl ${isDark ? 'bg-slate-800' : 'bg-white'} shadow-sm border-l-4 border-amber-400`}>
-                  <div>
-                    <p className="font-bold text-slate-800 dark:text-white text-sm">{item.name}</p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">{tpl?.name}</p>
+            {alertItems.map((item) => (
+              <button key={item.id} onClick={() => onEditItem(item)} className="w-full bg-amber-50 dark:bg-amber-900/30 border border-amber-100 dark:border-amber-900/50 p-3 rounded-2xl flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-white dark:bg-slate-800 rounded-xl flex items-center justify-center shadow-sm">
+                    <Clock size={16} className="text-amber-500" />
                   </div>
-                  <span className={`text-xs font-bold px-2 py-1 rounded-full ${days !== null && days < 0 ? 'bg-red-100 text-red-600' : 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400'}`}>
-                    {days !== null && days < 0 ? `${Math.abs(days)}日超過` : days === 0 ? '今日' : `あと${days}日`}
-                  </span>
+                  <p className="text-sm font-bold text-amber-900 dark:text-amber-400 truncate">{item.name}</p>
                 </div>
-              );
-            })}
+                <ChevronRight size={16} className="text-amber-300 flex-shrink-0" />
+              </button>
+            ))}
           </div>
         </div>
       )}
 
-      {/* Quick add */}
-      <button
-        onClick={onAddItem}
-        className="w-full flex items-center justify-center gap-2 py-4 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-2xl transition-colors shadow-sm"
-      >
-        <Plus size={20} />
-        アイテムを追加
-      </button>
-
-      {/* Recent items */}
-      {recentItems.length > 0 && (
-        <div>
-          <h3 className="font-bold text-slate-800 dark:text-white mb-3">最近のアイテム</h3>
+      {/* Recent activity */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <p className="font-bold text-[10px] text-slate-400">最近のアクティビティ</p>
+          <button onClick={onGoToLibrary} className="flex items-center gap-1">
+            <span className="text-amber-600 text-[10px] font-bold">すべて見る</span>
+            <ArrowRight size={12} className="text-amber-600" />
+          </button>
+        </div>
+        {recentItems.length > 0 ? (
           <div className="grid grid-cols-2 gap-3">
-            {recentItems.map((item) => {
-              const tpl = templates.find((t) => t.id === item.templateId);
-              return (
-                <div key={item.id} className={`rounded-2xl p-3 ${isDark ? 'bg-slate-800' : 'bg-white'} shadow-sm`}>
-                  <p className="font-bold text-slate-800 dark:text-white text-sm truncate">{item.name}</p>
-                  <p className="text-xs text-amber-600 dark:text-amber-400 mt-0.5 font-medium">{tpl?.name}</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">数量: {item.quantity}</p>
+            {recentItems.map((item) => (
+              <button key={item.id} onClick={() => onEditItem(item)} className="bg-white dark:bg-slate-800 p-4 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm text-left">
+                <div className="w-10 h-10 bg-slate-50 dark:bg-slate-700 rounded-2xl flex items-center justify-center mb-3">
+                  <Box size={20} className="text-slate-300" />
                 </div>
-              );
-            })}
+                <p className="font-bold text-slate-800 dark:text-white text-sm line-clamp-2">{item.name}</p>
+                <p className="text-[10px] font-bold text-slate-400 mt-2 truncate">{templates.find((t) => t.id === item.templateId)?.name || '未分類'}</p>
+              </button>
+            ))}
           </div>
-        </div>
-      )}
-
-      {items.length === 0 && (
-        <div className="text-center py-12">
-          <Package size={48} className="text-slate-300 dark:text-slate-600 mx-auto mb-3" />
-          <p className="text-slate-500 dark:text-slate-400 font-medium">アイテムがまだありません</p>
-          <p className="text-slate-400 dark:text-slate-500 text-sm">「アイテムを追加」から始めましょう</p>
-        </div>
-      )}
+        ) : (
+          <div className="text-center py-8">
+            <p className="text-slate-400 font-bold text-sm">アイテムがまだありません</p>
+            <button onClick={onAddItem} className="mt-4 px-6 py-3 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-2xl text-sm transition-colors">
+              最初のアイテムを追加
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -942,100 +612,163 @@ interface LibraryTabProps {
   onEditItem: (item: Item) => void;
   onDeleteItem: (id: string) => void;
   onQuantityChange: (id: string, delta: number) => void;
-  onAddItem: (templateId?: string) => void;
-  isDark: boolean;
+  onReorderItems: (reordered: Item[]) => void;
 }
 
-function LibraryTab({ templates, items, onEditItem, onDeleteItem, onQuantityChange, onAddItem, isDark }: LibraryTabProps) {
+function LibraryTab({ templates, items, onEditItem, onDeleteItem, onQuantityChange, onReorderItems }: LibraryTabProps) {
   const [search, setSearch] = useState('');
   const [filterTemplateId, setFilterTemplateId] = useState<string | null>(null);
+  const [activeAttributeFilter, setActiveAttributeFilter] = useState<{ key: string; value: string } | null>(null);
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
-  const filtered = items.filter((item) => {
-    const matchSearch = !search || item.name.toLowerCase().includes(search.toLowerCase()) ||
-      item.subLocation.toLowerCase().includes(search.toLowerCase()) ||
-      Object.values(item.attributes).some((v) => v.toLowerCase().includes(search.toLowerCase()));
-    const matchTemplate = !filterTemplateId || item.templateId === filterTemplateId;
-    return matchSearch && matchTemplate;
-  });
+  const filtered = useMemo(() => {
+    return items.filter((item) => {
+      const matchSearch = !search || item.name.toLowerCase().includes(search.toLowerCase());
+      const matchTemplate = !filterTemplateId || item.templateId === filterTemplateId;
+      let matchAttr = true;
+      if (activeAttributeFilter) {
+        matchAttr = item.attributes?.[activeAttributeFilter.key] === activeAttributeFilter.value;
+      }
+      return matchSearch && matchTemplate && matchAttr;
+    });
+  }, [items, search, filterTemplateId, activeAttributeFilter]);
+
+  const handleReorder = (fromIdx: number, toIdx: number) => {
+    if (fromIdx === toIdx) return;
+    const fromId = filtered[fromIdx]?.id;
+    const toId = filtered[toIdx]?.id;
+    if (!fromId || !toId) return;
+    const fromFull = items.findIndex((i) => i.id === fromId);
+    const toFull = items.findIndex((i) => i.id === toId);
+    const newItems = [...items];
+    const [moved] = newItems.splice(fromFull, 1);
+    newItems.splice(toFull, 0, moved);
+    onReorderItems(newItems);
+  };
 
   return (
     <div className="space-y-4">
       {/* Search */}
-      <div className={`flex items-center gap-3 px-4 py-3 rounded-2xl ${isDark ? 'bg-slate-800' : 'bg-white'} shadow-sm`}>
-        <Search size={18} className="text-slate-400 flex-shrink-0" />
+      <div className="relative flex items-center">
+        <Search size={18} className="absolute left-3 text-slate-400 pointer-events-none" />
         <input
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="アイテムを検索..."
-          className="flex-1 bg-transparent text-slate-800 dark:text-white placeholder-slate-400 font-medium focus:outline-none text-sm"
+          placeholder="名称で検索..."
+          className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl py-3 pl-10 pr-4 text-sm font-bold text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400"
         />
-        {search && (
-          <button onClick={() => setSearch('')} className="text-slate-400 hover:text-slate-600">
-            <X size={16} />
-          </button>
-        )}
       </div>
 
       {/* Template filter chips */}
-      <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-        <button
-          onClick={() => setFilterTemplateId(null)}
-          className={`flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-bold transition-colors ${!filterTemplateId ? 'bg-amber-500 text-white' : isDark ? 'bg-slate-800 text-slate-400 hover:bg-slate-700' : 'bg-white text-slate-500 hover:bg-slate-50 shadow-sm'}`}
-        >
+      <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
+        <button onClick={() => setFilterTemplateId(null)} className={`flex-shrink-0 px-4 py-2 rounded-full border text-xs font-bold transition-colors ${!filterTemplateId ? 'bg-amber-600 border-amber-600 text-white' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300'}`}>
           すべて
         </button>
         {templates.map((t) => (
-          <button
-            key={t.id}
-            onClick={() => setFilterTemplateId(filterTemplateId === t.id ? null : t.id)}
-            className={`flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-bold transition-colors ${filterTemplateId === t.id ? 'bg-amber-500 text-white' : isDark ? 'bg-slate-800 text-slate-400 hover:bg-slate-700' : 'bg-white text-slate-500 hover:bg-slate-50 shadow-sm'}`}
-          >
+          <button key={t.id} onClick={() => setFilterTemplateId(filterTemplateId === t.id ? null : t.id)} className={`flex-shrink-0 px-4 py-2 rounded-full border text-xs font-bold transition-colors ${filterTemplateId === t.id ? 'bg-amber-600 border-amber-600 text-white' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300'}`}>
             {t.name}
           </button>
         ))}
       </div>
 
-      {/* Results count */}
-      <div className="flex items-center justify-between">
-        <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-          {filtered.length}件のアイテム
-        </p>
-        <button
-          onClick={() => onAddItem(filterTemplateId ?? undefined)}
-          className="flex items-center gap-1.5 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-full text-sm transition-colors"
-        >
-          <Plus size={14} />
-          追加
-        </button>
-      </div>
-
-      {/* Items */}
-      {filtered.length === 0 ? (
-        <div className="text-center py-12">
-          <Package size={48} className="text-slate-300 dark:text-slate-600 mx-auto mb-3" />
-          <p className="text-slate-500 dark:text-slate-400 font-medium">
-            {search ? '検索結果がありません' : 'アイテムがありません'}
-          </p>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {filtered.map((item) => {
-            const template = templates.find((t) => t.id === item.templateId);
-            return (
-              <ItemCard
-                key={item.id}
-                item={item}
-                template={template}
-                onEdit={() => onEditItem(item)}
-                onDelete={() => onDeleteItem(item.id)}
-                onQuantityChange={(delta) => onQuantityChange(item.id, delta)}
-                isDark={isDark}
-              />
-            );
-          })}
+      {/* Attribute filter pill */}
+      {activeAttributeFilter && (
+        <div className="flex items-center bg-amber-50 dark:bg-amber-900/30 border border-amber-100 dark:border-amber-900/50 px-3 py-2 rounded-xl">
+          <Filter size={14} className="text-amber-500 flex-shrink-0" />
+          <p className="text-xs font-bold text-amber-800 dark:text-amber-400 ml-2 flex-1 truncate">絞り込み中: {activeAttributeFilter.value}</p>
+          <button onClick={() => setActiveAttributeFilter(null)} className="ml-2"><X size={14} className="text-amber-600" /></button>
         </div>
       )}
+
+      {/* Items */}
+      <div className="space-y-3">
+        {filtered.map((item, index) => {
+          const template = templates.find((t) => t.id === item.templateId);
+          return (
+            <div
+              key={item.id}
+              className={`flex items-center gap-1 transition-opacity rounded-[2rem] ${dragIndex === index ? 'opacity-40' : 'opacity-100'} ${dragOverIndex === index && dragIndex !== index ? 'ring-2 ring-amber-400' : ''}`}
+              draggable
+              onDragStart={(e) => { e.dataTransfer.effectAllowed = 'move'; setDragIndex(index); }}
+              onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; setDragOverIndex(index); }}
+              onDragLeave={() => setDragOverIndex(null)}
+              onDrop={(e) => { e.preventDefault(); if (dragIndex !== null) handleReorder(dragIndex, index); setDragIndex(null); setDragOverIndex(null); }}
+              onDragEnd={() => { setDragIndex(null); setDragOverIndex(null); }}
+            >
+              {/* Grip */}
+              <div className="cursor-grab active:cursor-grabbing p-2 text-slate-300 hover:text-amber-400 flex-shrink-0 select-none">
+                <GripVertical size={20} />
+              </div>
+              {/* Card */}
+              <div className="flex-1 bg-white dark:bg-slate-800 p-4 rounded-[2rem] shadow-sm border border-slate-100 dark:border-slate-700 cursor-pointer" onClick={() => onEditItem(item)}>
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 bg-slate-50 dark:bg-slate-700 rounded-2xl flex items-center justify-center flex-shrink-0">
+                    <Box size={24} className="text-slate-300" />
+                  </div>
+                  <div className="flex-1 min-w-0 py-1">
+                    <p className="font-bold text-slate-800 dark:text-white text-sm">{item.name}</p>
+                    <div className="flex flex-wrap items-center gap-2 mt-1.5">
+                      <span className="bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded-md text-[10px] text-slate-500 dark:text-slate-300 font-bold">{template?.name || '未分類'}</span>
+                      {item.subLocation && (
+                        <span className="flex items-center gap-1">
+                          <MapPin size={10} className="text-amber-600" />
+                          <span className="text-[10px] text-amber-600 font-bold">{item.subLocation}</span>
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  {/* Quantity controls */}
+                  <div className="flex items-center bg-slate-50 dark:bg-slate-700 rounded-2xl p-1 self-center flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+                    <button onClick={() => onQuantityChange(item.id, -1)} className="p-1"><MinusCircle size={18} className="text-slate-400" /></button>
+                    <span className="w-6 text-center font-bold text-sm text-slate-800 dark:text-white">{item.quantity || 0}</span>
+                    <button onClick={() => onQuantityChange(item.id, 1)} className="p-1"><PlusCircle size={18} className="text-slate-400" /></button>
+                  </div>
+                </div>
+                {/* Attribute chips */}
+                {item.attributes && Object.keys(item.attributes).some((k) => item.attributes[k]) && (
+                  <div className="flex flex-wrap gap-2 border-t border-slate-50 dark:border-slate-700 pt-3 mt-3">
+                    {Object.entries(item.attributes).map(([key, val]) => {
+                      if (!val && val !== 'false') return null;
+                      const isCheckbox = val === 'true' || val === 'false';
+                      const isTag = !isCheckbox && (val.toString().startsWith('#') || key.toLowerCase().includes('タグ'));
+                      const isUrl = !isCheckbox && val.toString().startsWith('http');
+                      if (isCheckbox) {
+                        return (
+                          <span key={key} className="flex items-center gap-1 px-2 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-700">
+                            {val === 'true' ? <CheckSquare size={10} className="text-amber-600" /> : <Square size={10} className="text-slate-400" />}
+                            <span className={`text-[10px] font-bold ${val === 'true' ? 'text-amber-600' : 'text-slate-400'}`}>{key}</span>
+                          </span>
+                        );
+                      }
+                      return (
+                        <button key={key} onClick={(e) => { e.stopPropagation(); isUrl ? window.open(val, '_blank') : setActiveAttributeFilter({ key, value: val }); }} className={`flex items-center gap-1 px-2 py-1.5 rounded-lg ${isTag ? 'bg-amber-100 dark:bg-amber-900/30' : isUrl ? 'bg-blue-50 dark:bg-blue-900/30' : 'bg-slate-50 dark:bg-slate-700'}`}>
+                          {isTag ? <Hash size={9} className="text-amber-700" /> : isUrl ? <ExternalLink size={9} className="text-blue-600" /> : <Tag size={9} className="text-slate-500" />}
+                          <span className={`text-[10px] font-bold ${isTag ? 'text-amber-700 dark:text-amber-400' : isUrl ? 'text-blue-600 dark:text-blue-400' : 'text-slate-500 dark:text-slate-300'}`}>{isUrl ? key : val}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+              {/* Delete */}
+              <button
+                onClick={(e) => { e.stopPropagation(); if (window.confirm('アイテムを削除しますか？')) onDeleteItem(item.id); }}
+                className="p-2 text-slate-300 hover:text-red-400 transition-colors flex-shrink-0"
+              >
+                <Trash2 size={16} />
+              </button>
+            </div>
+          );
+        })}
+        {filtered.length === 0 && (
+          <div className="flex flex-col items-center justify-center py-20 gap-2">
+            <Library size={48} className="text-slate-200 dark:text-slate-700" strokeWidth={1} />
+            <p className="text-sm font-bold text-slate-300 mt-2">アイテムが見つかりませんでした</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -1046,105 +779,90 @@ function LibraryTab({ templates, items, onEditItem, onDeleteItem, onQuantityChan
 
 interface TemplatesTabProps {
   templates: Template[];
-  items: Item[];
   onCreateTemplate: () => void;
   onEditTemplate: (t: Template) => void;
   onDeleteTemplate: (id: string) => void;
   onShowPresets: () => void;
-  isDark: boolean;
+  onReorderTemplates: (reordered: Template[]) => void;
 }
 
-function TemplatesTab({ templates, items, onCreateTemplate, onEditTemplate, onDeleteTemplate, onShowPresets, isDark }: TemplatesTabProps) {
-  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+function TemplatesTab({ templates, onCreateTemplate, onEditTemplate, onDeleteTemplate, onShowPresets, onReorderTemplates }: TemplatesTabProps) {
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+
+  const handleReorder = (fromIdx: number, toIdx: number) => {
+    if (fromIdx === toIdx) return;
+    const newTemplates = [...templates];
+    const [moved] = newTemplates.splice(fromIdx, 1);
+    newTemplates.splice(toIdx, 0, moved);
+    onReorderTemplates(newTemplates);
+  };
 
   return (
-    <div className="space-y-4">
-      {/* Actions */}
-      <div className="flex gap-3">
-        <button
-          onClick={onShowPresets}
-          className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl border-2 border-amber-400 text-amber-600 dark:text-amber-400 font-bold text-sm transition-colors hover:bg-amber-50 dark:hover:bg-amber-900/10`}
-        >
-          <Layers size={16} />
-          プリセット
-        </button>
-        <button
-          onClick={onCreateTemplate}
-          className="flex-1 flex items-center justify-center gap-2 py-3 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-2xl text-sm transition-colors"
-        >
-          <Plus size={16} />
-          新規作成
-        </button>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between px-1">
+        <h2 className="text-lg font-bold text-slate-800 dark:text-white">テンプレート管理</h2>
+        <div className="flex gap-2">
+          <button onClick={onShowPresets} className="flex items-center gap-1 bg-white dark:bg-slate-800 border border-amber-200 px-3 py-2 rounded-xl text-amber-600 text-xs font-bold hover:bg-amber-50 transition-colors">
+            <Sparkles size={14} />
+            プリセット
+          </button>
+          <button onClick={onCreateTemplate} className="flex items-center gap-1 bg-amber-600 hover:bg-amber-700 px-3 py-2 rounded-xl text-white text-xs font-bold shadow-sm transition-colors">
+            <Plus size={14} />
+            作成
+          </button>
+        </div>
       </div>
 
-      {/* Template list */}
-      {templates.length === 0 ? (
-        <div className="text-center py-12">
-          <Layers size={48} className="text-slate-300 dark:text-slate-600 mx-auto mb-3" />
-          <p className="text-slate-500 dark:text-slate-400 font-medium">テンプレートがありません</p>
-          <p className="text-slate-400 dark:text-slate-500 text-sm">プリセットか新規作成から始めましょう</p>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {templates.map((template) => {
-            const itemCount = items.filter((i) => i.templateId === template.id).length;
-            return (
-              <div key={template.id} className={`rounded-2xl p-4 shadow-sm ${isDark ? 'bg-slate-800' : 'bg-white'}`}>
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <h3 className="font-bold text-slate-800 dark:text-white">{template.name}</h3>
-                    <div className="flex flex-wrap gap-1 mt-2">
-                      <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">{itemCount}個のアイテム</span>
-                      <span className="text-xs text-slate-300 dark:text-slate-600">·</span>
-                      <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">{template.subLocations.length}場所</span>
-                      <span className="text-xs text-slate-300 dark:text-slate-600">·</span>
-                      <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">{template.attributes.length}属性</span>
-                    </div>
-                    {template.subLocations.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mt-2">
-                        {template.subLocations.slice(0, 4).map((loc) => (
-                          <span key={loc} className="text-xs px-2 py-0.5 bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 rounded-full font-medium">{loc}</span>
-                        ))}
-                        {template.subLocations.length > 4 && (
-                          <span className="text-xs px-2 py-0.5 bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 rounded-full font-medium">+{template.subLocations.length - 4}</span>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex gap-1 ml-2">
-                    <button onClick={() => onEditTemplate(template)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl transition-colors">
-                      <Edit3 size={15} className="text-slate-400" />
-                    </button>
-                    {deleteConfirm === template.id ? (
-                      <button
-                        onClick={() => { onDeleteTemplate(template.id); setDeleteConfirm(null); }}
-                        className="p-2 bg-red-100 dark:bg-red-900/30 rounded-xl transition-colors"
-                      >
-                        <Trash2 size={15} className="text-red-500" />
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => setDeleteConfirm(template.id)}
-                        className="p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors"
-                      >
-                        <Trash2 size={15} className="text-slate-400 hover:text-red-400" />
-                      </button>
-                    )}
-                  </div>
+      {/* Templates list */}
+      <div className="space-y-3">
+        {templates.map((template, index) => (
+          <div
+            key={template.id}
+            className={`flex items-center gap-1 transition-opacity ${dragIndex === index ? 'opacity-40' : 'opacity-100'} ${dragOverIndex === index && dragIndex !== index ? 'ring-2 ring-amber-400 rounded-3xl' : ''}`}
+            draggable
+            onDragStart={(e) => { e.dataTransfer.effectAllowed = 'move'; setDragIndex(index); }}
+            onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; setDragOverIndex(index); }}
+            onDragLeave={() => setDragOverIndex(null)}
+            onDrop={(e) => { e.preventDefault(); if (dragIndex !== null) handleReorder(dragIndex, index); setDragIndex(null); setDragOverIndex(null); }}
+            onDragEnd={() => { setDragIndex(null); setDragOverIndex(null); }}
+          >
+            {/* Grip */}
+            <div className="cursor-grab active:cursor-grabbing p-2 text-slate-300 hover:text-amber-400 flex-shrink-0 select-none">
+              <GripVertical size={20} />
+            </div>
+            {/* Card */}
+            <button onClick={() => onEditTemplate(template)} className="flex-1 bg-white dark:bg-slate-800 p-4 rounded-3xl border border-slate-100 dark:border-slate-700 flex items-center justify-between hover:shadow-md transition-shadow">
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                <div className="p-2.5 bg-amber-50 dark:bg-slate-700 rounded-2xl flex-shrink-0">
+                  <Layers size={20} className="text-amber-600" />
                 </div>
-                {deleteConfirm === template.id && (
-                  <div className="mt-3 p-3 bg-red-50 dark:bg-red-900/20 rounded-xl">
-                    <p className="text-xs text-red-600 dark:text-red-400 font-medium mb-2">
-                      削除すると関連する{itemCount}個のアイテムも削除されます。本当に削除しますか？
-                    </p>
-                    <button onClick={() => setDeleteConfirm(null)} className="text-xs text-slate-500 font-bold hover:text-slate-700">キャンセル</button>
-                  </div>
-                )}
+                <div className="flex-1 min-w-0 text-left">
+                  <p className="font-bold text-slate-800 dark:text-white text-base truncate">{template.name}</p>
+                  <p className="text-[10px] text-slate-400 font-bold mt-1">{template.subLocations?.length || 0} 階層 / {template.attributes?.length || 0} 属性</p>
+                </div>
               </div>
-            );
-          })}
-        </div>
-      )}
+              <ChevronRight size={18} className="text-slate-200 flex-shrink-0" />
+            </button>
+            {/* Delete */}
+            <button
+              onClick={(e) => { e.stopPropagation(); if (window.confirm('このテンプレートを削除しますか？関連するアイテムもすべて削除されます。')) onDeleteTemplate(template.id); }}
+              className="p-2 text-slate-300 hover:text-red-400 transition-colors flex-shrink-0"
+            >
+              <Trash2 size={16} />
+            </button>
+          </div>
+        ))}
+
+        {templates.length === 0 && (
+          <div className="text-center py-12">
+            <Layers size={48} className="text-slate-200 dark:text-slate-700 mx-auto mb-3" strokeWidth={1} />
+            <p className="font-bold text-slate-400">テンプレートがありません</p>
+            <p className="text-slate-400 text-sm mt-1">プリセットか新規作成から始めましょう</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -1165,162 +883,116 @@ interface SettingsTabProps {
 }
 
 function SettingsTab({ settings, onUpdateSettings, templates, items, onDeleteAllData, isDark, userEmail, userName }: SettingsTabProps) {
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleImportCSV = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      const text = ev.target?.result as string;
-      alert(`CSVファイル「${file.name}」を読み込みました。\nインポート機能は近日公開予定です。`);
-    };
-    reader.readAsText(file, 'utf-8');
+    alert(`CSVファイル「${file.name}」を読み込みました。\nインポート機能は近日公開予定です。`);
   };
 
-  const themeOptions: { value: Settings['theme']; label: string; icon: React.ReactNode }[] = [
-    { value: 'light', label: 'ライト', icon: <Sun size={16} /> },
-    { value: 'dark', label: 'ダーク', icon: <Moon size={16} /> },
-    { value: 'system', label: 'システム', icon: <Monitor size={16} /> },
-  ];
-
-  const dayOptions = [1, 3, 5, 7];
-  const hourOptions = [7, 9, 12, 18, 20];
+  const handleResetData = () => {
+    if (window.confirm('🚨 全データリセット\n\n登録したアイテムとテンプレートがすべて削除されます。元に戻せません。本当に実行しますか？')) {
+      onDeleteAllData();
+    }
+  };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
+      <h2 className="text-2xl font-bold text-slate-800 dark:text-white">設定</h2>
+
       {/* Account */}
-      <section>
-        <h3 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-3">アカウント</h3>
-        <div className={`rounded-2xl p-4 ${isDark ? 'bg-slate-800' : 'bg-white'} shadow-sm`}>
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 bg-amber-500 rounded-full flex items-center justify-center">
-              <span className="text-white font-bold text-lg">
-                {userName ? userName[0].toUpperCase() : userEmail ? userEmail[0].toUpperCase() : 'U'}
-              </span>
+      <div className="space-y-3">
+        <p className="text-xs font-bold text-slate-400 ml-2">アカウント</p>
+        <div className="bg-white dark:bg-slate-800 rounded-3xl overflow-hidden border border-slate-100 dark:border-slate-700">
+          <div className="p-4 flex items-center gap-3 border-b border-slate-100 dark:border-slate-700">
+            <div className="w-10 h-10 bg-amber-500 rounded-full flex items-center justify-center flex-shrink-0">
+              <span className="text-white font-bold">{userName ? userName[0].toUpperCase() : userEmail ? userEmail[0].toUpperCase() : 'U'}</span>
             </div>
-            <div>
-              {userName && <p className="font-bold text-slate-800 dark:text-white">{userName}</p>}
-              <p className="text-sm text-slate-500 dark:text-slate-400">{userEmail}</p>
+            <div className="flex-1 min-w-0">
+              {userName && <p className="font-bold text-slate-800 dark:text-white text-sm truncate">{userName}</p>}
+              <p className="text-sm text-slate-500 dark:text-slate-400 truncate">{userEmail}</p>
             </div>
           </div>
-          <button
-            onClick={() => signOut(auth)}
-            className="w-full flex items-center justify-center gap-2 py-3 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 font-bold rounded-2xl transition-colors"
-          >
-            <LogOut size={16} />
-            ログアウト
+          <button onClick={() => signOut(auth)} className="w-full flex items-center p-4 gap-3 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+            <LogOut size={20} className="text-slate-400" />
+            <span className="font-bold">ログアウト</span>
           </button>
         </div>
-      </section>
+      </div>
 
       {/* Theme */}
-      <section>
-        <h3 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-3">テーマ</h3>
-        <div className={`rounded-2xl p-4 ${isDark ? 'bg-slate-800' : 'bg-white'} shadow-sm`}>
-          <div className="grid grid-cols-3 gap-2">
-            {themeOptions.map((opt) => (
-              <button
-                key={opt.value}
-                onClick={() => onUpdateSettings({ theme: opt.value })}
-                className={`flex flex-col items-center gap-1 py-3 rounded-xl transition-colors font-bold text-sm ${settings.theme === opt.value ? 'bg-amber-500 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'}`}
-              >
-                {opt.icon}
-                {opt.label}
-              </button>
-            ))}
-          </div>
+      <div className="space-y-3">
+        <p className="text-xs font-bold text-slate-400 ml-2">テーマ設定</p>
+        <div className="bg-white dark:bg-slate-800 rounded-3xl overflow-hidden border border-slate-100 dark:border-slate-700">
+          <button onClick={() => onUpdateSettings({ theme: 'light' })} className="w-full flex items-center justify-between p-4 border-b border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+            <div className="flex items-center gap-3"><Sun size={20} className="text-slate-500" /><span className="font-bold text-slate-700 dark:text-slate-200">ライトモード</span></div>
+            {settings.theme === 'light' && <div className="w-3 h-3 rounded-full bg-amber-500" />}
+          </button>
+          <button onClick={() => onUpdateSettings({ theme: 'dark' })} className="w-full flex items-center justify-between p-4 border-b border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+            <div className="flex items-center gap-3"><Moon size={20} className="text-slate-500" /><span className="font-bold text-slate-700 dark:text-slate-200">ダークモード</span></div>
+            {settings.theme === 'dark' && <div className="w-3 h-3 rounded-full bg-amber-500" />}
+          </button>
+          <button onClick={() => onUpdateSettings({ theme: 'system' })} className="w-full flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+            <div className="flex items-center gap-3"><Smartphone size={20} className="text-slate-500" /><span className="font-bold text-slate-700 dark:text-slate-200">端末の設定に従う</span></div>
+            {settings.theme === 'system' && <div className="w-3 h-3 rounded-full bg-amber-500" />}
+          </button>
         </div>
-      </section>
+      </div>
 
       {/* Notifications */}
-      <section>
-        <h3 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-3">通知設定</h3>
-        <div className={`rounded-2xl p-4 ${isDark ? 'bg-slate-800' : 'bg-white'} shadow-sm space-y-4`}>
-          <div>
-            <label className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 block">期限の何日前に通知</label>
-            <div className="flex gap-2">
-              {dayOptions.map((d) => (
-                <button
-                  key={d}
-                  onClick={() => onUpdateSettings({ notificationDaysBefore: d })}
-                  className={`flex-1 py-2 rounded-xl text-sm font-bold transition-colors ${settings.notificationDaysBefore === d ? 'bg-amber-500 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200'}`}
-                >
-                  {d}日
+      <div className="space-y-3">
+        <p className="text-xs font-bold text-slate-400 ml-2">通知設定</p>
+        <div className="bg-white dark:bg-slate-800 rounded-3xl overflow-hidden border border-slate-100 dark:border-slate-700">
+          <div className="p-4 border-b border-slate-100 dark:border-slate-700">
+            <div className="flex items-center gap-2 mb-3">
+              <Bell size={16} className="text-amber-600" />
+              <p className="text-xs font-bold text-slate-600 dark:text-slate-300">期限の何日前に通知するか</p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {[1, 3, 5, 7].map((days) => (
+                <button key={days} onClick={() => onUpdateSettings({ notificationDaysBefore: days })} className={`px-4 py-2 rounded-xl border text-xs font-bold transition-colors ${settings.notificationDaysBefore === days ? 'bg-amber-600 border-amber-600 text-white' : 'bg-slate-50 dark:bg-slate-700 border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300'}`}>
+                  {days}日前
                 </button>
               ))}
             </div>
           </div>
-          <div>
-            <label className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 block">通知時刻</label>
-            <div className="flex gap-2 flex-wrap">
-              {hourOptions.map((h) => (
-                <button
-                  key={h}
-                  onClick={() => onUpdateSettings({ notificationHour: h })}
-                  className={`px-3 py-2 rounded-xl text-sm font-bold transition-colors ${settings.notificationHour === h ? 'bg-amber-500 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200'}`}
-                >
-                  {h}:00
+          <div className="p-4">
+            <p className="text-xs font-bold text-slate-600 dark:text-slate-300 mb-3">通知時刻</p>
+            <div className="flex flex-wrap gap-2">
+              {[7, 9, 12, 18, 20].map((hour) => (
+                <button key={hour} onClick={() => onUpdateSettings({ notificationHour: hour })} className={`px-4 py-2 rounded-xl border text-xs font-bold transition-colors ${settings.notificationHour === hour ? 'bg-amber-600 border-amber-600 text-white' : 'bg-slate-50 dark:bg-slate-700 border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300'}`}>
+                  {hour}時
                 </button>
               ))}
             </div>
           </div>
         </div>
-      </section>
+      </div>
 
-      {/* Data Management */}
-      <section>
-        <h3 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-3">データ管理</h3>
-        <div className={`rounded-2xl p-4 ${isDark ? 'bg-slate-800' : 'bg-white'} shadow-sm space-y-3`}>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="text-center p-3 bg-slate-50 dark:bg-slate-700 rounded-xl">
-              <p className="text-2xl font-bold text-slate-800 dark:text-white">{items.length}</p>
-              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">アイテム</p>
-            </div>
-            <div className="text-center p-3 bg-slate-50 dark:bg-slate-700 rounded-xl">
-              <p className="text-2xl font-bold text-slate-800 dark:text-white">{templates.length}</p>
-              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">テンプレート</p>
-            </div>
-          </div>
-
-          <button
-            onClick={() => exportToCSV(templates, items)}
-            className="w-full flex items-center justify-center gap-2 py-3 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 font-bold rounded-2xl transition-colors"
-          >
-            <Download size={16} />
-            CSVでエクスポート
+      {/* Data management */}
+      <div className="space-y-3">
+        <p className="text-xs font-bold text-slate-400 ml-2">データ管理 (バックアップ)</p>
+        <div className="bg-white dark:bg-slate-800 rounded-3xl overflow-hidden border border-slate-100 dark:border-slate-700">
+          <button onClick={() => exportToCSV(templates, items)} className="w-full flex items-center p-4 gap-3 border-b border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+            <Download size={20} className="text-amber-600" />
+            <span className="font-bold text-slate-700 dark:text-slate-200">CSVバックアップを出力</span>
           </button>
-
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            className="w-full flex items-center justify-center gap-2 py-3 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 font-bold rounded-2xl transition-colors"
-          >
-            <Upload size={16} />
-            CSVからインポート
+          <button onClick={() => fileInputRef.current?.click()} className="w-full flex items-center p-4 gap-3 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+            <Upload size={20} className="text-blue-500" />
+            <span className="font-bold text-slate-700 dark:text-slate-200">CSVファイルから復元</span>
           </button>
           <input ref={fileInputRef} type="file" accept=".csv" className="hidden" onChange={handleImportCSV} />
-
-          {!showDeleteConfirm ? (
-            <button
-              onClick={() => setShowDeleteConfirm(true)}
-              className="w-full flex items-center justify-center gap-2 py-3 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 text-red-500 font-bold rounded-2xl transition-colors"
-            >
-              <RefreshCw size={16} />
-              データをすべて削除
-            </button>
-          ) : (
-            <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-2xl space-y-3">
-              <p className="text-sm text-red-600 dark:text-red-400 font-bold text-center">本当にすべてのデータを削除しますか？</p>
-              <p className="text-xs text-red-500 text-center">この操作は取り消せません</p>
-              <div className="flex gap-2">
-                <button onClick={() => setShowDeleteConfirm(false)} className="flex-1 py-2 bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold rounded-xl text-sm">キャンセル</button>
-                <button onClick={() => { onDeleteAllData(); setShowDeleteConfirm(false); }} className="flex-1 py-2 bg-red-500 text-white font-bold rounded-xl text-sm hover:bg-red-600">削除する</button>
-              </div>
-            </div>
-          )}
         </div>
-      </section>
+      </div>
+
+      {/* Reset */}
+      <div>
+        <button onClick={handleResetData} className="w-full bg-red-50 dark:bg-red-900/30 rounded-3xl flex items-center p-4 gap-3 border border-red-100 dark:border-red-900 hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors">
+          <Trash2 size={20} className="text-red-500" />
+          <span className="font-bold text-red-500">全データをリセット</span>
+        </button>
+      </div>
     </div>
   );
 }
@@ -1333,53 +1005,39 @@ type Tab = 'dashboard' | 'library' | 'templates' | 'settings';
 
 export default function HomePage() {
   const { user, loading: authLoading } = useAuth();
-  const { templates, items, loading: dataLoading, saveTemplate, deleteTemplate, saveItem, deleteItem, updateQuantity, deleteAllData } = useData(user?.uid ?? null);
+  const { templates, items, loading: dataLoading, saveTemplate, deleteTemplate, saveItem, deleteItem, updateQuantity, reorderItems, reorderTemplates, deleteAllData } = useData(user?.uid ?? null);
 
-  // Settings (local)
-  const [settings, setSettings] = useState<Settings>({
-    theme: 'system',
-    notificationDaysBefore: 7,
-    notificationHour: 9,
-  });
-
-  // Active tab
+  const [settings, setSettings] = useState<Settings>({ theme: 'system', notificationDaysBefore: 7, notificationHour: 9 });
   const [tab, setTab] = useState<Tab>('dashboard');
-
-  // Modals
+  const [showTutorial, setShowTutorial] = useState(false);
   const [showItemEditor, setShowItemEditor] = useState(false);
   const [editingItem, setEditingItem] = useState<Item | null>(null);
   const [defaultTemplateId, setDefaultTemplateId] = useState<string | undefined>(undefined);
   const [showTemplateEditor, setShowTemplateEditor] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<Template | null>(null);
   const [showPresets, setShowPresets] = useState(false);
-
-  // Theme
   const [isDark, setIsDark] = useState(false);
 
-  // Load settings from localStorage
+  // Load settings
   useEffect(() => {
     const saved = localStorage.getItem('tresor-settings');
-    if (saved) {
-      try {
-        setSettings(JSON.parse(saved));
-      } catch {
-        // ignore
-      }
-    }
+    if (saved) { try { setSettings(JSON.parse(saved)); } catch { /* ignore */ } }
   }, []);
+
+  // Show tutorial for new users (no templates, tutorial not done)
+  useEffect(() => {
+    if (!dataLoading && templates.length === 0) {
+      const done = localStorage.getItem('tresor-tutorial-done');
+      if (!done) setShowTutorial(true);
+    }
+  }, [dataLoading, templates.length]);
 
   // Apply theme
   useEffect(() => {
-    const apply = (dark: boolean) => {
-      setIsDark(dark);
-      document.documentElement.classList.toggle('dark', dark);
-    };
-
-    if (settings.theme === 'dark') {
-      apply(true);
-    } else if (settings.theme === 'light') {
-      apply(false);
-    } else {
+    const apply = (dark: boolean) => { setIsDark(dark); document.documentElement.classList.toggle('dark', dark); };
+    if (settings.theme === 'dark') { apply(true); }
+    else if (settings.theme === 'light') { apply(false); }
+    else {
       const mq = window.matchMedia('(prefers-color-scheme: dark)');
       apply(mq.matches);
       const handler = (e: MediaQueryListEvent) => apply(e.matches);
@@ -1389,66 +1047,30 @@ export default function HomePage() {
   }, [settings.theme]);
 
   const updateSettings = (partial: Partial<Settings>) => {
-    setSettings((prev) => {
-      const next = { ...prev, ...partial };
-      localStorage.setItem('tresor-settings', JSON.stringify(next));
-      return next;
-    });
+    setSettings((prev) => { const next = { ...prev, ...partial }; localStorage.setItem('tresor-settings', JSON.stringify(next)); return next; });
   };
 
-  const handleSaveItem = async (item: Item) => {
-    await saveItem(item);
-    setShowItemEditor(false);
-    setEditingItem(null);
-  };
-
-  const handleSaveTemplate = async (template: Template) => {
-    await saveTemplate(template);
-    setShowTemplateEditor(false);
-    setEditingTemplate(null);
-  };
-
+  const handleSaveItem = async (item: Item) => { await saveItem(item); setShowItemEditor(false); setEditingItem(null); };
+  const handleSaveTemplate = async (template: Template) => { await saveTemplate(template); setShowTemplateEditor(false); setEditingTemplate(null); };
   const handleSelectPreset = async (preset: Omit<Template, 'id' | 'createdAt' | 'updatedAt'>) => {
     const now = Date.now();
-    await saveTemplate({
-      id: generateId(),
-      ...preset,
-      createdAt: now,
-      updatedAt: now,
-      sortOrder: templates.length,
-    });
+    await saveTemplate({ id: generateId(), ...preset, createdAt: now, updatedAt: now, sortOrder: templates.length });
     setShowPresets(false);
   };
 
-  const openAddItem = (templateId?: string) => {
-    setEditingItem(null);
-    setDefaultTemplateId(templateId);
-    setShowItemEditor(true);
-  };
+  const openAddItem = (templateId?: string) => { setEditingItem(null); setDefaultTemplateId(templateId); setShowItemEditor(true); };
+  const openEditItem = (item: Item) => { setEditingItem(item); setDefaultTemplateId(undefined); setShowItemEditor(true); };
+  const openEditTemplate = (template: Template) => { setEditingTemplate(template); setShowTemplateEditor(true); };
+  const openCreateTemplate = () => { setEditingTemplate(null); setShowTemplateEditor(true); };
 
-  const openEditItem = (item: Item) => {
-    setEditingItem(item);
-    setDefaultTemplateId(undefined);
-    setShowItemEditor(true);
-  };
+  const closeTutorial = () => { setShowTutorial(false); localStorage.setItem('tresor-tutorial-done', 'true'); };
 
-  const openEditTemplate = (template: Template) => {
-    setEditingTemplate(template);
-    setShowTemplateEditor(true);
-  };
-
-  const openCreateTemplate = () => {
-    setEditingTemplate(null);
-    setShowTemplateEditor(true);
-  };
-
-  // Loading
   if (authLoading) {
     return (
       <div className={`min-h-screen flex items-center justify-center ${isDark ? 'bg-slate-900' : 'bg-amber-50'}`}>
         <div className="text-center">
           <div className="w-16 h-16 bg-amber-500 rounded-3xl flex items-center justify-center mx-auto mb-4 animate-pulse">
-            <span className="text-white text-2xl font-bold">t</span>
+            <span className="text-white text-2xl font-bold italic">t</span>
           </div>
           <p className="text-slate-500 font-medium">読み込み中...</p>
         </div>
@@ -1456,14 +1078,11 @@ export default function HomePage() {
     );
   }
 
-  // Not authenticated
-  if (!user) {
-    return <LoginPage />;
-  }
+  if (!user) return <LoginPage />;
 
   const navItems: { id: Tab; label: string; icon: React.ReactNode }[] = [
-    { id: 'dashboard', label: 'ダッシュボード', icon: <LayoutDashboard size={22} /> },
-    { id: 'library', label: 'ライブラリ', icon: <BookOpen size={22} /> },
+    { id: 'dashboard', label: 'ホーム', icon: <LayoutDashboard size={22} /> },
+    { id: 'library', label: 'ライブラリ', icon: <Library size={22} /> },
     { id: 'templates', label: 'テンプレート', icon: <Layers size={22} /> },
     { id: 'settings', label: '設定', icon: <SettingsIcon size={22} /> },
   ];
@@ -1472,38 +1091,27 @@ export default function HomePage() {
     <div className={`min-h-screen flex ${isDark ? 'bg-slate-900' : 'bg-slate-50'}`}>
       {/* Sidebar (desktop) */}
       <aside className={`hidden md:flex flex-col w-64 flex-shrink-0 border-r ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'} shadow-sm`}>
-        {/* Logo */}
-        <div className="px-6 py-6 border-b border-slate-100 dark:border-slate-800">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-amber-500 rounded-2xl flex items-center justify-center shadow-sm">
-              <span className="text-white font-bold text-lg">t</span>
-            </div>
-            <h1 className="text-2xl font-bold text-amber-600 dark:text-amber-400">trésor</h1>
+        <div className="px-6 py-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-amber-600 dark:text-amber-400 italic">trésor</h1>
+            <p className="text-xs text-slate-400 mt-0.5 font-medium">あなただけの宝箱</p>
           </div>
-          <p className="text-xs text-slate-400 mt-2 font-medium">あなただけの宝箱</p>
+          <button onClick={() => setShowTutorial(true)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl transition-colors" title="使い方">
+            <BookOpen size={18} className="text-slate-400" />
+          </button>
         </div>
-
-        {/* Nav items */}
         <nav className="flex-1 px-3 py-4 space-y-1">
           {navItems.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => setTab(item.id)}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-colors font-bold text-sm ${tab === item.id ? 'bg-amber-500 text-white shadow-sm' : isDark ? 'text-slate-400 hover:bg-slate-800 hover:text-white' : 'text-slate-600 hover:bg-slate-50'}`}
-            >
+            <button key={item.id} onClick={() => setTab(item.id)} className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-colors font-bold text-sm ${tab === item.id ? 'bg-amber-500 text-white shadow-sm' : isDark ? 'text-slate-400 hover:bg-slate-800 hover:text-white' : 'text-slate-600 hover:bg-slate-50'}`}>
               {item.icon}
               {item.label}
             </button>
           ))}
         </nav>
-
-        {/* User info at bottom */}
         <div className="px-6 py-4 border-t border-slate-100 dark:border-slate-800">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-amber-500 rounded-full flex items-center justify-center flex-shrink-0">
-              <span className="text-white font-bold text-sm">
-                {user.displayName ? user.displayName[0].toUpperCase() : user.email ? user.email[0].toUpperCase() : 'U'}
-              </span>
+              <span className="text-white font-bold text-sm">{user.displayName ? user.displayName[0].toUpperCase() : user.email ? user.email[0].toUpperCase() : 'U'}</span>
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-xs font-bold text-slate-700 dark:text-slate-300 truncate">{user.displayName || user.email}</p>
@@ -1518,24 +1126,12 @@ export default function HomePage() {
       {/* Main content */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Mobile header */}
-        <header className={`md:hidden flex items-center justify-between px-4 py-4 border-b ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'} shadow-sm`}>
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-amber-500 rounded-xl flex items-center justify-center">
-              <span className="text-white font-bold">t</span>
-            </div>
-            <h1 className="text-xl font-bold text-amber-600 dark:text-amber-400">trésor</h1>
-          </div>
-          <button onClick={() => signOut(auth)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl transition-colors">
-            <LogOut size={18} className="text-slate-400" />
+        <header className={`md:hidden flex items-center justify-between px-4 py-3 border-b ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'} shadow-sm z-10`}>
+          <h1 className="text-xl font-bold text-amber-500 italic">trésor</h1>
+          <button onClick={() => setShowTutorial(true)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl transition-colors">
+            <BookOpen size={20} className="text-slate-400" />
           </button>
         </header>
-
-        {/* Desktop page title */}
-        <div className={`hidden md:block px-8 py-6 border-b ${isDark ? 'border-slate-800' : 'border-slate-100 bg-white'}`}>
-          <h2 className="text-2xl font-bold text-slate-800 dark:text-white">
-            {navItems.find((n) => n.id === tab)?.label}
-          </h2>
-        </div>
 
         {/* Content */}
         <main className="flex-1 overflow-y-auto pb-24 md:pb-8">
@@ -1545,8 +1141,9 @@ export default function HomePage() {
                 templates={templates}
                 items={items}
                 onAddItem={() => openAddItem()}
-                isDark={isDark}
-                notifyDaysBefore={settings.notificationDaysBefore}
+                onShowTutorial={() => setShowTutorial(true)}
+                onGoToLibrary={() => setTab('library')}
+                onEditItem={openEditItem}
               />
             )}
             {tab === 'library' && (
@@ -1556,19 +1153,17 @@ export default function HomePage() {
                 onEditItem={openEditItem}
                 onDeleteItem={deleteItem}
                 onQuantityChange={(id, delta) => updateQuantity(id, delta)}
-                onAddItem={openAddItem}
-                isDark={isDark}
+                onReorderItems={reorderItems}
               />
             )}
             {tab === 'templates' && (
               <TemplatesTab
                 templates={templates}
-                items={items}
                 onCreateTemplate={openCreateTemplate}
                 onEditTemplate={openEditTemplate}
                 onDeleteTemplate={deleteTemplate}
                 onShowPresets={() => setShowPresets(true)}
-                isDark={isDark}
+                onReorderTemplates={reorderTemplates}
               />
             )}
             {tab === 'settings' && (
@@ -1586,23 +1181,30 @@ export default function HomePage() {
           </div>
         </main>
 
+        {/* FAB (library tab only) */}
+        {tab === 'library' && (
+          <button
+            onClick={() => openAddItem()}
+            className="fixed right-6 bottom-20 md:bottom-8 w-14 h-14 bg-amber-600 hover:bg-amber-700 rounded-full shadow-lg flex items-center justify-center z-20 transition-colors"
+          >
+            <Plus size={28} className="text-white" />
+          </button>
+        )}
+
         {/* Mobile bottom nav */}
-        <nav className={`md:hidden fixed bottom-0 left-0 right-0 border-t flex items-center ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'} shadow-lg`} style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+        <nav className={`md:hidden fixed bottom-0 left-0 right-0 border-t flex items-center ${isDark ? 'bg-slate-900/95 border-slate-800' : 'bg-white/95 border-slate-200'} shadow-lg z-10`} style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
           {navItems.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => setTab(item.id)}
-              className={`flex-1 flex flex-col items-center gap-1 py-3 transition-colors ${tab === item.id ? 'text-amber-500' : isDark ? 'text-slate-500 hover:text-slate-300' : 'text-slate-400 hover:text-slate-600'}`}
-            >
+            <button key={item.id} onClick={() => setTab(item.id)} className={`flex-1 flex flex-col items-center gap-1 py-3 transition-colors ${tab === item.id ? 'text-amber-500' : isDark ? 'text-slate-500' : 'text-slate-400'}`}>
               {item.icon}
-              <span className={`text-xs font-bold ${tab === item.id ? 'text-amber-500' : ''}`}>{item.label}</span>
+              <span className={`text-[10px] font-bold ${tab === item.id ? 'text-amber-500' : ''}`}>{item.label}</span>
             </button>
           ))}
         </nav>
       </div>
 
       {/* Modals */}
-      {showItemEditor && templates.length > 0 && (
+      {showTutorial && <TutorialModal onClose={closeTutorial} />}
+      {showItemEditor && (
         <ItemEditorModal
           item={editingItem}
           templates={templates}
@@ -1612,24 +1214,6 @@ export default function HomePage() {
           isDark={isDark}
         />
       )}
-
-      {showItemEditor && templates.length === 0 && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/50" onClick={() => setShowItemEditor(false)} />
-          <div className={`relative rounded-3xl p-6 max-w-sm w-full text-center shadow-2xl ${isDark ? 'bg-slate-800' : 'bg-white'}`}>
-            <Layers size={40} className="text-amber-500 mx-auto mb-3" />
-            <h3 className="font-bold text-slate-800 dark:text-white mb-2">テンプレートが必要です</h3>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">アイテムを追加する前に、テンプレートを作成してください</p>
-            <button
-              onClick={() => { setShowItemEditor(false); setTab('templates'); }}
-              className="w-full py-3 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-2xl"
-            >
-              テンプレートを作成
-            </button>
-          </div>
-        </div>
-      )}
-
       {showTemplateEditor && (
         <TemplateEditorModal
           template={editingTemplate}
@@ -1638,7 +1222,6 @@ export default function HomePage() {
           isDark={isDark}
         />
       )}
-
       {showPresets && (
         <PresetSelectionModal
           onSelect={handleSelectPreset}
