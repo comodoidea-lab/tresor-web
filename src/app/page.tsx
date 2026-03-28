@@ -670,11 +670,10 @@ function LibraryTab({ templates, items, onEditItem, onDeleteItem, onQuantityChan
   const [deleteMode, setDeleteMode] = useState(false);
   const [swipedId, setSwipedId] = useState<string | null>(null);
 
-  // Long-press drag sort state
+  // Drag sort state
   const [activeDragId, setActiveDragId] = useState<string | null>(null);
   const [dragDeltaY, setDragDeltaY] = useState(0);
   const [dropIndex, setDropIndex] = useState<number | null>(null);
-  const lpTimer = useRef<ReturnType<typeof setTimeout>>();
   const dragStartY = useRef(0);
   const dragFromIdx = useRef(0);
   const dragItemH = useRef(88);
@@ -711,37 +710,28 @@ function LibraryTab({ templates, items, onEditItem, onDeleteItem, onQuantityChan
     onReorderItems(newItems);
   };
 
+  // Called from the grip handle — starts drag immediately, no long-press needed
   const initDrag = (e: React.PointerEvent, item: Item, idx: number) => {
-    if (!sortMode) return;
-    const y = e.clientY;
+    e.preventDefault();
+    e.stopPropagation();
     const pid = e.pointerId;
-    dragStartY.current = y;
-    didDrag.current = false;
-    lpTimer.current = setTimeout(() => {
-      const el = rowRefs.current.get(item.id);
-      dragItemH.current = (el?.getBoundingClientRect().height ?? 80) + 12;
-      origCenters.current = filtered.map((i) => {
-        const r = rowRefs.current.get(i.id);
-        return r ? r.getBoundingClientRect().top + r.getBoundingClientRect().height / 2 : 0;
-      });
-      dragFromIdx.current = idx;
-      didDrag.current = true;
-      try { listRef.current?.setPointerCapture(pid); } catch { /* */ }
-      setActiveDragId(item.id);
-      setDropIndex(idx);
-      if (typeof navigator.vibrate === 'function') navigator.vibrate(30);
-    }, 400);
+    dragStartY.current = e.clientY;
+    const el = rowRefs.current.get(item.id);
+    dragItemH.current = (el?.getBoundingClientRect().height ?? 80) + 12;
+    origCenters.current = filtered.map((i) => {
+      const r = rowRefs.current.get(i.id);
+      return r ? r.getBoundingClientRect().top + r.getBoundingClientRect().height / 2 : 0;
+    });
+    dragFromIdx.current = idx;
+    didDrag.current = true;
+    try { listRef.current?.setPointerCapture(pid); } catch { /* */ }
+    setActiveDragId(item.id);
+    setDropIndex(idx);
+    if (typeof navigator.vibrate === 'function') navigator.vibrate(30);
   };
 
   const onDragMove = (e: React.PointerEvent) => {
-    if (!sortMode) return;
-    if (!activeDragId) {
-      if (lpTimer.current && Math.abs(e.clientY - dragStartY.current) > 10) {
-        clearTimeout(lpTimer.current);
-        lpTimer.current = undefined;
-      }
-      return;
-    }
+    if (!activeDragId) return;
     e.preventDefault();
     const delta = e.clientY - dragStartY.current;
     setDragDeltaY(delta);
@@ -756,13 +746,10 @@ function LibraryTab({ templates, items, onEditItem, onDeleteItem, onQuantityChan
   };
 
   const endDrag = () => {
-    clearTimeout(lpTimer.current);
-    lpTimer.current = undefined;
     if (activeDragId) {
       if (dropIndex !== null && dropIndex !== dragFromIdx.current) {
         handleReorder(dragFromIdx.current, dropIndex);
       }
-      // Suppress click after drag
       setTimeout(() => { didDrag.current = false; }, 300);
     } else {
       didDrag.current = false;
@@ -877,10 +864,10 @@ function LibraryTab({ templates, items, onEditItem, onDeleteItem, onQuantityChan
       <div
         ref={listRef}
         className="space-y-3"
-        style={{ touchAction: activeDragId ? 'none' : 'auto', userSelect: 'none' }}
-        onPointerMove={sortMode ? onDragMove : undefined}
-        onPointerUp={sortMode ? endDrag : undefined}
-        onPointerCancel={sortMode ? endDrag : undefined}
+        style={{ userSelect: 'none' }}
+        onPointerMove={onDragMove}
+        onPointerUp={endDrag}
+        onPointerCancel={endDrag}
       >
         {filtered.map((item, index) => {
           const template = templates.find((t) => t.id === item.templateId);
@@ -892,7 +879,7 @@ function LibraryTab({ templates, items, onEditItem, onDeleteItem, onQuantityChan
               ref={(el) => { if (el) rowRefs.current.set(item.id, el); else rowRefs.current.delete(item.id); }}
               style={getRowStyle(item.id, index)}
               className="relative overflow-hidden rounded-[2rem]"
-              onPointerDown={(e) => { if (sortMode) initDrag(e, item, index); else onSwipeStart(e, item.id); }}
+              onPointerDown={!sortMode ? (e) => onSwipeStart(e, item.id) : undefined}
               onPointerMove={!sortMode ? onSwipeMove : undefined}
               onPointerUp={!sortMode ? (e) => onSwipeEnd(e, item.id) : undefined}
               onPointerCancel={!sortMode ? () => { swipeRef.current = null; } : undefined}
@@ -937,8 +924,8 @@ function LibraryTab({ templates, items, onEditItem, onDeleteItem, onQuantityChan
                       )}
                     </div>
                   </div>
-                  {/* Quantity controls — hidden in delete mode */}
-                  {!deleteMode && (
+                  {/* Quantity controls — hidden in sort/delete mode */}
+                  {!sortMode && !deleteMode && (
                     <div className="flex items-center bg-slate-50 dark:bg-slate-700 rounded-2xl p-1 self-center flex-shrink-0" onClick={(e) => e.stopPropagation()}>
                       <button onClick={(e) => { e.stopPropagation(); onQuantityChange(item.id, -1); }} className="p-1"><MinusCircle size={18} className="text-slate-400" /></button>
                       <span className="w-6 text-center font-bold text-sm text-slate-800 dark:text-white">{item.quantity || 0}</span>
@@ -953,6 +940,16 @@ function LibraryTab({ templates, items, onEditItem, onDeleteItem, onQuantityChan
                     >
                       <Trash2 size={18} className="text-red-500" />
                     </button>
+                  )}
+                  {/* Sort mode grip handle */}
+                  {sortMode && (
+                    <div
+                      style={{ touchAction: 'none' }}
+                      className="p-2 self-center flex-shrink-0 cursor-grab active:cursor-grabbing"
+                      onPointerDown={(e) => initDrag(e, item, index)}
+                    >
+                      <GripVertical size={22} className={isDragging ? 'text-amber-500' : 'text-slate-300'} />
+                    </div>
                   )}
                 </div>
                 {/* Attribute chips */}
@@ -1019,11 +1016,10 @@ function TemplatesTab({ templates, onCreateTemplate, onEditTemplate, onDeleteTem
   const [deleteMode, setDeleteMode] = useState(false);
   const [swipedId, setSwipedId] = useState<string | null>(null);
 
-  // Long-press drag sort state
+  // Drag sort state
   const [activeDragId, setActiveDragId] = useState<string | null>(null);
   const [dragDeltaY, setDragDeltaY] = useState(0);
   const [dropIndex, setDropIndex] = useState<number | null>(null);
-  const lpTimer = useRef<ReturnType<typeof setTimeout>>();
   const dragStartY = useRef(0);
   const dragFromIdx = useRef(0);
   const dragItemH = useRef(88);
@@ -1044,36 +1040,26 @@ function TemplatesTab({ templates, onCreateTemplate, onEditTemplate, onDeleteTem
   };
 
   const initDrag = (e: React.PointerEvent, t: Template, idx: number) => {
-    if (!sortMode) return;
-    const y = e.clientY;
+    e.preventDefault();
+    e.stopPropagation();
     const pid = e.pointerId;
-    dragStartY.current = y;
-    didDrag.current = false;
-    lpTimer.current = setTimeout(() => {
-      const el = rowRefs.current.get(t.id);
-      dragItemH.current = (el?.getBoundingClientRect().height ?? 80) + 12;
-      origCenters.current = templates.map((tmpl) => {
-        const r = rowRefs.current.get(tmpl.id);
-        return r ? r.getBoundingClientRect().top + r.getBoundingClientRect().height / 2 : 0;
-      });
-      dragFromIdx.current = idx;
-      didDrag.current = true;
-      try { listRef.current?.setPointerCapture(pid); } catch { /* */ }
-      setActiveDragId(t.id);
-      setDropIndex(idx);
-      if (typeof navigator.vibrate === 'function') navigator.vibrate(30);
-    }, 400);
+    dragStartY.current = e.clientY;
+    const el = rowRefs.current.get(t.id);
+    dragItemH.current = (el?.getBoundingClientRect().height ?? 80) + 12;
+    origCenters.current = templates.map((tmpl) => {
+      const r = rowRefs.current.get(tmpl.id);
+      return r ? r.getBoundingClientRect().top + r.getBoundingClientRect().height / 2 : 0;
+    });
+    dragFromIdx.current = idx;
+    didDrag.current = true;
+    try { listRef.current?.setPointerCapture(pid); } catch { /* */ }
+    setActiveDragId(t.id);
+    setDropIndex(idx);
+    if (typeof navigator.vibrate === 'function') navigator.vibrate(30);
   };
 
   const onDragMove = (e: React.PointerEvent) => {
-    if (!sortMode) return;
-    if (!activeDragId) {
-      if (lpTimer.current && Math.abs(e.clientY - dragStartY.current) > 10) {
-        clearTimeout(lpTimer.current);
-        lpTimer.current = undefined;
-      }
-      return;
-    }
+    if (!activeDragId) return;
     e.preventDefault();
     const delta = e.clientY - dragStartY.current;
     setDragDeltaY(delta);
@@ -1088,8 +1074,6 @@ function TemplatesTab({ templates, onCreateTemplate, onEditTemplate, onDeleteTem
   };
 
   const endDrag = () => {
-    clearTimeout(lpTimer.current);
-    lpTimer.current = undefined;
     if (activeDragId) {
       if (dropIndex !== null && dropIndex !== dragFromIdx.current) {
         handleReorder(dragFromIdx.current, dropIndex);
@@ -1184,10 +1168,10 @@ function TemplatesTab({ templates, onCreateTemplate, onEditTemplate, onDeleteTem
       <div
         ref={listRef}
         className="space-y-3"
-        style={{ touchAction: activeDragId ? 'none' : 'auto', userSelect: 'none' }}
-        onPointerMove={sortMode ? onDragMove : undefined}
-        onPointerUp={sortMode ? endDrag : undefined}
-        onPointerCancel={sortMode ? endDrag : undefined}
+        style={{ userSelect: 'none' }}
+        onPointerMove={onDragMove}
+        onPointerUp={endDrag}
+        onPointerCancel={endDrag}
       >
         {templates.map((template, index) => {
           const isDragging = activeDragId === template.id;
@@ -1198,7 +1182,7 @@ function TemplatesTab({ templates, onCreateTemplate, onEditTemplate, onDeleteTem
               ref={(el) => { if (el) rowRefs.current.set(template.id, el); else rowRefs.current.delete(template.id); }}
               style={getRowStyle(template.id, index)}
               className="relative overflow-hidden rounded-3xl"
-              onPointerDown={(e) => { if (sortMode) initDrag(e, template, index); else onSwipeStart(e, template.id); }}
+              onPointerDown={!sortMode ? (e) => onSwipeStart(e, template.id) : undefined}
               onPointerMove={!sortMode ? onSwipeMove : undefined}
               onPointerUp={!sortMode ? (e) => onSwipeEnd(e, template.id) : undefined}
               onPointerCancel={!sortMode ? () => { swipeRef.current = null; } : undefined}
@@ -1243,6 +1227,14 @@ function TemplatesTab({ templates, onCreateTemplate, onEditTemplate, onDeleteTem
                   >
                     <Trash2 size={18} className="text-red-500" />
                   </button>
+                ) : sortMode ? (
+                  <div
+                    style={{ touchAction: 'none' }}
+                    className="p-2 cursor-grab active:cursor-grabbing flex-shrink-0"
+                    onPointerDown={(e) => initDrag(e, template, index)}
+                  >
+                    <GripVertical size={22} className={isDragging ? 'text-amber-500' : 'text-slate-300'} />
+                  </div>
                 ) : (
                   <ChevronRight size={18} className="text-slate-200 flex-shrink-0" />
                 )}
