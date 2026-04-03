@@ -634,16 +634,16 @@ function DashboardTab({ templates, items, onAddItem, onShowTutorial, onGoToLibra
               <span className="block text-xs text-secondary/60 mb-1 font-bold">テンプレート</span>
               <span className="font-headline text-3xl font-black text-primary">{templates.length}</span>
             </div>
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row gap-3">
               <button
                 onClick={onShowTutorial}
-                className="px-5 py-3 rounded-xl font-bold text-sm border border-outline-variant/30 hover:bg-surface-container transition-colors"
+                className="px-5 py-3 rounded-xl font-bold text-sm border border-outline-variant/30 hover:bg-surface-container transition-colors flex-1 sm:flex-initial"
               >
                 使い方
               </button>
               <button
                 onClick={onAddItem}
-                className="bg-gradient-to-r from-primary-container to-primary-fixed-dim text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 shadow-primary hover:shadow-lg hover:scale-[1.02] active:scale-95 transition-all"
+                className="bg-gradient-to-r from-primary-container to-primary-fixed-dim text-white px-6 py-3 rounded-xl font-bold flex items-center justify-center gap-2 shadow-primary hover:shadow-lg hover:scale-[1.02] active:scale-95 transition-all flex-1 sm:flex-initial"
               >
                 <Plus size={20} />
                 アイテムを追加
@@ -1385,17 +1385,17 @@ function TemplatesTab({ templates, onCreateTemplate, onEditTemplate, onDeleteTem
             <p className="text-sm text-secondary/60">全 <span className="text-primary font-bold">{templates.length}</span> テンプレート</p>
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-2">
           <button
             onClick={onShowPresets}
-            className="flex items-center gap-2 bg-surface-container-low border border-outline-variant/20 px-4 py-2.5 rounded-xl text-secondary text-sm font-bold hover:bg-surface-container transition-all active:scale-95"
+            className="flex items-center justify-center gap-2 bg-surface-container-low border border-outline-variant/20 px-4 py-2.5 rounded-xl text-secondary text-sm font-bold hover:bg-surface-container transition-all active:scale-95 flex-1 sm:flex-initial"
           >
             <Sparkles size={16} className="text-primary-container" />
             プリセット
           </button>
           <button
             onClick={onCreateTemplate}
-            className="flex items-center gap-2 bg-gradient-to-r from-primary-container to-primary-fixed-dim text-white px-4 py-2.5 rounded-xl text-sm font-bold shadow-primary hover:shadow-elevated active:shadow-press active:scale-95 transition-all"
+            className="flex items-center justify-center gap-2 bg-gradient-to-r from-primary-container to-primary-fixed-dim text-white px-4 py-2.5 rounded-xl text-sm font-bold shadow-primary hover:shadow-elevated active:shadow-press active:scale-95 transition-all flex-1 sm:flex-initial"
           >
             <Plus size={16} />
             作成
