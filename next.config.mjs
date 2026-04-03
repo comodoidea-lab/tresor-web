@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  vercelToolbar: false,
   async headers() {
     return [
       {
