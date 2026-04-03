@@ -359,7 +359,7 @@ function ItemEditorModal({ item, templates, defaultTemplateId, onSave, onClose, 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={onClose}>
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm pointer-events-none" />
-      <div className="relative z-10 w-full sm:max-w-lg max-h-[90vh] overflow-y-auto rounded-t-3xl sm:rounded-3xl shadow-2xl bg-surface-container-lowest" onClick={(e) => e.stopPropagation()}>
+      <div className="relative z-10 w-full sm:max-w-lg max-h-[90vh] overflow-y-auto overflow-x-hidden rounded-t-3xl sm:rounded-3xl shadow-2xl bg-surface-container-lowest" onClick={(e) => e.stopPropagation()}>
         <div className="sticky top-0 z-10 flex items-center justify-between px-6 pt-6 pb-4 border-b border-outline-variant/20 bg-inherit rounded-t-3xl">
           <h2 className="text-lg font-bold text-on-surface">{item ? 'アイテム編集' : 'モノを登録'}</h2>
           <button onClick={onClose} className="p-2 hover:bg-surface-container rounded-full transition-colors"><X size={20} className="text-secondary" /></button>
@@ -402,7 +402,7 @@ function ItemEditorModal({ item, templates, defaultTemplateId, onSave, onClose, 
                   {(attr.type === 'text' || attr.type === 'number' || attr.type === 'tag') ? (
                     <input type={attr.type === 'number' ? 'number' : 'text'} value={attributes[attr.name] ?? ''} onChange={(e) => setAttributes({ ...attributes, [attr.name]: e.target.value })} placeholder={attr.name} className="w-full px-4 py-2.5 bg-surface-container border border-outline-variant/20 rounded-xl text-on-surface placeholder:text-secondary/40 focus:outline-none focus:ring-2 focus:ring-primary/20 font-medium" />
                   ) : attr.type === 'date' ? (
-                    <input type="date" value={attributes[attr.name] ?? ''} onChange={(e) => setAttributes({ ...attributes, [attr.name]: e.target.value })} className="w-full min-w-0 px-4 py-2.5 bg-surface-container border border-outline-variant/20 rounded-xl text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20 font-medium" />
+                    <input type="date" value={attributes[attr.name] ?? ''} onChange={(e) => setAttributes({ ...attributes, [attr.name]: e.target.value })} className="w-full max-w-full min-w-0 px-4 py-2.5 bg-surface-container border border-outline-variant/20 rounded-xl text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20 font-medium" />
                   ) : attr.type === 'url' ? (
                     <input type="url" value={attributes[attr.name] ?? ''} onChange={(e) => setAttributes({ ...attributes, [attr.name]: e.target.value })} placeholder="https://..." className="w-full px-4 py-2.5 bg-surface-container border border-outline-variant/20 rounded-xl text-on-surface placeholder:text-secondary/40 focus:outline-none focus:ring-2 focus:ring-primary/20 font-medium" />
                   ) : attr.type === 'checkbox' ? (
