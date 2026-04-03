@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="ja"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-error": "#690005",
+                      "surface-container-low": "#1d1b1c",
+                      "secondary-fixed-dim": "#bbc6e2",
+                      "surface-container-highest": "#373435",
+                      "surface": "#151314",
+                      "on-tertiary-fixed-variant": "#004e5f",
+                      "outline-variant": "#44474c",
+                      "on-primary-fixed-variant": "#3a4859",
+                      "secondary-container": "#3e4960",
+                      "surface-variant": "#373435",
+                      "secondary": "#bbc6e2",
+                      "surface-container-lowest": "#100e0f",
+                      "primary-container": "#0d1b2a",
+                      "on-surface-variant": "#c4c6cc",
+                      "surface-tint": "#bac8dc",
+                      "secondary-fixed": "#d7e2ff",
+                      "on-tertiary-container": "#008eab",
+                      "on-tertiary-fixed": "#001f27",
+                      "on-surface": "#e8e1e2",
+                      "error": "#ffb4ab",
+                      "on-primary-fixed": "#0f1c2c",
+                      "primary-fixed": "#d6e4f9",
+                      "primary": "#bac8dc",
+                      "inverse-on-surface": "#333031",
+                      "primary-fixed-dim": "#bac8dc",
+                      "tertiary-fixed": "#b3ebff",
+                      "tertiary-fixed-dim": "#4cd6fb",
+                      "on-error-container": "#ffdad6",
+                      "on-secondary-fixed": "#101b30",
+                      "on-secondary": "#263046",
+                      "on-secondary-fixed-variant": "#3c475d",
+                      "inverse-surface": "#e8e1e2",
+                      "tertiary-container": "#001d25",
+                      "on-primary-container": "#768497",
+                      "on-tertiary": "#003642",
+                      "background": "#151314",
+                      "surface-container": "#211f20",
+                      "tertiary": "#4cd6fb",
+                      "outline": "#8e9196",
+                      "surface-container-high": "#2c292a",
+                      "on-background": "#e8e1e2",
+                      "surface-dim": "#151314",
+                      "surface-bright": "#3c3839",
+                      "on-secondary-container": "#adb8d3",
+                      "inverse-primary": "#525f71",
+                      "on-primary": "#243141",
+                      "error-container": "#93000a"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "fontFamily": {
+                      "headline": ["Inter"],
+                      "body": ["Inter"],
+                      "label": ["Inter"]
+              }
+            },
+          },
+        }
+      </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body min-h-screen pb-24">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-[#151314]/60 backdrop-blur-xl flex items-center justify-between px-6 h-16 w-full shadow-[0_20px_40px_rgba(0,0,0,0.4)]">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[#bac8dc]" data-icon="shield">shield</span>
+<h1 class="text-xl font-bold tracking-widest text-[#bac8dc] uppercase font-headline">在庫管理</h1>
+</div>
+<div class="flex items-center gap-4">
+<button class="active:scale-95 transition-transform hover:bg-[#2c292a] p-2 rounded-full">
+<span class="material-symbols-outlined text-[#bac8dc]" data-icon="notifications">notifications</span>
+</button>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-outline-variant/15">
+<img class="w-full h-full object-cover" data-alt="close-up portrait of a professional manager in dark clothing against a dark architectural background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBfqVkkby30T1JTLNECpPt5GFfRisqiWk5Dd0qkP5C8oVmzEHqrnUFOfyEAluhDoxtBLV2UWD9mG1QR0VjSTaAIKLO2qdpsph5n0Oq9U8vqIsZgqUKJ5wouMTd-rp5Hf68W54V7nmXiAp8kRFCttx1Jy-cXMGHn79bjgj49xaQrr-Tuv18_mIVtt-8_yujK4M4CPGUlrNkQUhO0uzu1mD5oqkF1v6tZLwf0L1xlrNS_L9EEPIQEU25O0Tv23O3yeU5TEQcP5XlQA7cI"/>
+</div>
+</div>
+</header>
+<main class="pt-24 px-6 max-w-md mx-auto">
+<!-- Hero Section: Total Portfolio Value -->
+<section class="mb-10">
+<div class="flex flex-col gap-1">
+<span class="text-[10px] uppercase tracking-[0.2em] font-medium text-on-tertiary-container/80">ポートフォリオ総額</span>
+<div class="flex items-baseline gap-2">
+<h2 class="text-[3.5rem] font-black leading-none tracking-tight font-headline text-primary">¥42.8M</h2>
+<span class="text-tertiary text-sm font-bold flex items-center">
+<span class="material-symbols-outlined text-sm" data-icon="trending_up">trending_up</span>
+                        2.4%
+                    </span>
+</div>
+</div>
+<!-- Bento Visual Component -->
+<div class="mt-6 grid grid-cols-2 gap-4">
+<div class="bg-surface-container-low p-5 rounded-xl shadow-inner relative overflow-hidden group">
+<div class="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-50"></div>
+<span class="material-symbols-outlined text-tertiary mb-3 block" data-icon="inventory_2">inventory_2</span>
+<p class="text-xs text-on-surface-variant font-medium uppercase tracking-wider">稼働資産</p>
+<p class="text-2xl font-bold text-on-surface mt-1">1,284</p>
+<div class="absolute bottom-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-6xl" data-icon="database">database</span>
+</div>
+</div>
+<div class="bg-surface-container-low p-5 rounded-xl relative overflow-hidden group">
+<div class="absolute inset-0 bg-gradient-to-br from-error/10 to-transparent opacity-50"></div>
+<span class="material-symbols-outlined text-error mb-3 block" data-icon="warning">warning</span>
+<p class="text-xs text-on-surface-variant font-medium uppercase tracking-wider">重要警告</p>
+<p class="text-2xl font-bold text-on-surface mt-1">12</p>
+<div class="absolute bottom-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-6xl" data-icon="priority_high">priority_high</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Critical Items List -->
+<section class="mb-10">
+<div class="flex items-center justify-between mb-4">
+<h3 class="text-sm font-bold uppercase tracking-[0.15em] text-on-surface-variant">重要在庫アイテム</h3>
+<button class="text-[10px] uppercase font-bold text-tertiary tracking-widest">すべて見る</button>
+</div>
+<div class="space-y-3">
+<!-- Card 1 -->
+<div class="bg-surface-container-low p-4 rounded-xl flex items-center gap-4 group active:scale-[0.98] transition-all">
+<div class="w-14 h-14 rounded-lg bg-surface-container-lowest overflow-hidden flex-shrink-0">
+<img class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" data-alt="sleek minimalist matte black smartwatch on a dark slate surface with dramatic lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB88HfKarASsKyuQI3ZnxoabNMYhymwrHVbAC1eLqJn9xHgBcIUREX6fhZWEdCUVt6LGpY8ZIVuoyl1av_qxetpm6y9H_px3428qli6SoErCEAR9DwnN4xlzd7hm4xVuOBMRDN-v7CCKk01LZG5yd4MteYiQTLwI0sBkbEifB7Vq-t_KOigtonbXr7e8o_WrRY6KCl8C1j5j3v65B8si2XEobLoM2HpU5fGDV0eyewgAoM0jR0nBq_yH0HE0Nu5Foy9xyDqnxn9x1vu"/>
+</div>
+<div class="flex-grow">
+<div class="flex justify-between items-start">
+<h4 class="font-bold text-on-surface text-sm">Zenith Smart X</h4>
+<span class="bg-tertiary-container text-tertiary text-[10px] px-2 py-0.5 rounded-full font-bold shadow-[0_0_10px_rgba(76,214,251,0.1)]">残 3</span>
+</div>
+<p class="text-[10px] text-on-tertiary-container mt-1 font-mono uppercase tracking-tighter">SKU: ZSX-0092-B</p>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="bg-surface-container-low p-4 rounded-xl flex items-center gap-4 group active:scale-[0.98] transition-all">
+<div class="w-14 h-14 rounded-lg bg-surface-container-lowest overflow-hidden flex-shrink-0">
+<img class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" data-alt="high-end carbon fiber headphones against a dark blue background with electric blue rim lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAyFGNtx7bYVrQkFlWSU3Ug56HhoSPr45Gp5c2eNgr2e8A6eGv6vu3ziGb9ZgIfMi-DHz411NdXAMB7ej5zoby0UheNJriW8xwshMx4Pxr4z5SRjlmJSgp0WFX6xCvbPBk3yiblBPyN9pDLBmeMaKqcvgG2gvt8bybM_KwQSDjhsFXlHcCRBZAl7b5sU1MylJyqN-lXh0bliEwWKExZKaX8g7_aIt5aPgK5PK9ruC1xxiwED-hm_0MFSboshQIfW7B7agmNZkdU9hUX"/>
+</div>
+<div class="flex-grow">
+<div class="flex justify-between items-start">
+<h4 class="font-bold text-on-surface text-sm">Aura Noise Cancelling</h4>
+<span class="bg-tertiary-container text-tertiary text-[10px] px-2 py-0.5 rounded-full font-bold shadow-[0_0_10px_rgba(76,214,251,0.1)]">残 1</span>
+</div>
+<p class="text-[10px] text-on-tertiary-container mt-1 font-mono uppercase tracking-tighter">SKU: ANC-5521-W</p>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="bg-surface-container-low p-4 rounded-xl flex items-center gap-4 group active:scale-[0.98] transition-all">
+<div class="w-14 h-14 rounded-lg bg-surface-container-lowest overflow-hidden flex-shrink-0">
+<img class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" data-alt="professional leather bound notebook on a dark wood table with cinematic lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD-4yArCqUImPMcwBwsLoYiFpAk4b7Rjcohe9C8O8G53HKAvS6IpkQy_l2mgcqQq6HaHMvYYq1PZjcLAd3UwZqduGj_r9hH60EqEfmZ-C2eefgUxP2qQknGcz1ER9QqeILU2nLOx0gOU__GIlMVA4-CLZJMJJO83PAIUmxppTw8XXV526TsJZJHsva9vXBOH2Fw28KSqHAxM1qqyPvVBYUvXEdvKD2FIOACm5AhhNEubd6dkaMhAa2GNWKCA5-vPOgsJmchyP3_7Hpv"/>
+</div>
+<div class="flex-grow">
+<div class="flex justify-between items-start">
+<h4 class="font-bold text-on-surface text-sm">Nomad Leather Folio</h4>
+<span class="bg-tertiary-container text-tertiary text-[10px] px-2 py-0.5 rounded-full font-bold shadow-[0_0_10px_rgba(76,214,251,0.1)]">残 5</span>
+</div>
+<p class="text-[10px] text-on-tertiary-container mt-1 font-mono uppercase tracking-tighter">SKU: NLF-1104-T</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Quick Actions Grid -->
+<section class="mb-12">
+<h3 class="text-sm font-bold uppercase tracking-[0.15em] text-on-surface-variant mb-4">クイックアクション</h3>
+<div class="grid grid-cols-2 gap-4">
+<button class="bg-gradient-to-br from-primary to-primary-container p-6 rounded-xl text-left flex flex-col justify-between h-32 active:scale-95 transition-transform shadow-[0_10px_20px_rgba(0,0,0,0.3)]">
+<span class="material-symbols-outlined text-on-primary-fixed" data-icon="add_box" style="font-variation-settings: 'FILL' 1;">add_box</span>
+<span class="text-on-primary-fixed font-bold text-sm tracking-wide">アイテム追加</span>
+</button>
+<button class="bg-surface-container-high border border-outline-variant/10 p-6 rounded-xl text-left flex flex-col justify-between h-32 active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-tertiary" data-icon="bar_chart">bar_chart</span>
+<span class="text-on-surface font-bold text-sm tracking-wide">分析レポート</span>
+</button>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-3 pb-safe bg-[#151314]/60 backdrop-blur-xl rounded-t-2xl border-t border-[#44474c]/15 shadow-[0_-10px_30px_rgba(0,0,0,0.3)]">
+<a class="flex flex-col items-center justify-center text-[#4cd6fb] bg-[#001d25] rounded-xl px-4 py-1.5 shadow-[0_0_15px_rgba(76,214,251,0.2)] active:scale-90 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+<span class="font-['Inter'] text-[10px] uppercase tracking-[0.1em] font-medium mt-1">ホーム</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#3e4960] px-4 py-1.5 hover:text-[#bac8dc] active:scale-90 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="inventory_2">inventory_2</span>
+<span class="font-['Inter'] text-[10px] uppercase tracking-[0.1em] font-medium mt-1">在庫</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#3e4960] px-4 py-1.5 hover:text-[#bac8dc] active:scale-90 transition-all duration-200" href="#">
+<div class="bg-primary text-on-primary w-12 h-12 rounded-full flex items-center justify-center -mt-8 shadow-lg">
+<span class="material-symbols-outlined text-2xl" data-icon="qr_code_scanner">qr_code_scanner</span>
+</div>
+<span class="font-['Inter'] text-[10px] uppercase tracking-[0.1em] font-medium mt-1">スキャン</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#3e4960] px-4 py-1.5 hover:text-[#bac8dc] active:scale-90 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-['Inter'] text-[10px] uppercase tracking-[0.1em] font-medium mt-1">設定</span>
+</a>
+</nav>
+</body></html>

@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+
+<html class="light" lang="ja"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Manrope:wght@700;800&amp;family=Plus+Jakarta+Sans:wght@700;800&amp;family=Noto+Sans+JP:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "primary": "#f59d0a",
+                    "on-surface": "#333333",
+                    "tertiary-fixed": "#e6fffa",
+                    "on-tertiary-fixed-variant": "#00a371",
+                    "secondary-fixed": "#f0f4f8",
+                    "on-secondary-fixed-variant": "#57657a",
+                    "surface-dim": "#e4dbc0",
+                    "outline": "#757682",
+                    "surface-container": "#e8dfc4",
+                    "on-error": "#ffffff",
+                    "error": "#e74c3c",
+                    "error-container": "#fdeaea",
+                    "on-error-container": "#e74c3c",
+                    "inverse-on-surface": "#f4ebd0",
+                    "surface-bright": "#fcf5e3",
+                    "surface-variant": "#e0d6ba",
+                    "surface-container-low": "#ede4c9",
+                    "surface-container-highest": "#d9cfb4",
+                    "surface-container-lowest": "#ffffff",
+                    "surface": "#f4ebd0",
+                    "background": "#f4ebd0"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["Noto Sans JP", "Manrope", "sans-serif"],
+                    "body": ["Noto Sans JP", "Inter", "sans-serif"],
+                    "label": ["Noto Sans JP", "Inter", "sans-serif"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #c5c6d2;
+            border-radius: 10px;
+        }
+    </style>
+<style>
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+</head>
+<body class="bg-background font-body text-on-surface selection:bg-primary/20 selection:text-primary min-h-screen pb-24 md:pb-0">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-[#f4ebd0]/90 dark:bg-stone-900/80 backdrop-blur-xl flex justify-between items-center px-6 py-4 w-full border-b border-outline/10">
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-stone-600 dark:text-stone-400 hover:bg-stone-200/50 dark:hover:bg-stone-800/50 transition-colors p-2 rounded-lg active:scale-95 duration-200">menu</button>
+<h1 class="font-['Plus_Jakarta_Sans'] font-black text-amber-600 dark:text-amber-500 tracking-tighter text-2xl">Tresor</h1>
+</div>
+<div class="flex items-center gap-2">
+<button class="material-symbols-outlined text-stone-600 dark:text-stone-400 hover:bg-stone-200/50 dark:hover:bg-stone-800/50 transition-colors p-2 rounded-lg active:scale-95 duration-200">search</button>
+<div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center overflow-hidden">
+<img alt="User Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBH8Snahy-CPR3UHC75ZmEFmqKNBNVbmHwTN6YtDB_xMi1fssvMkeCRIw5821TYEGCJvEpsMS46nWC2Jk_izudn7TaYSPjfhAcV86K7UFAbool5vLpaQZCbxi1-KSsnPNgD859YsgkfDOgDZ7oc5VowlMtUdoFlDr0HWGDRRIZ734AndJ9SrDeOgNWlKYUeK5wpIdSxWEilwXMpOTY2R9Kz8eaiUocYAIiDQQM2t5L6GMA2_n_-PErJXaYO1VoWMQ8T8SBwVX6CJ-uJ"/>
+</div>
+</div>
+</header>
+<main class="max-w-7xl mx-auto px-6 pt-24 pb-8">
+<!-- Hero Section / Title -->
+<div class="mb-12">
+<span class="font-label text-[10px] uppercase tracking-widest text-outline font-bold mb-2 block">グローバル・アーカイブ</span>
+<h2 class="font-headline text-5xl font-extrabold text-on-surface tracking-tight">在庫一覧</h2>
+</div>
+<!-- Filter & Search Bar Cluster -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-12">
+<!-- Search -->
+<div class="lg:col-span-5 relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="w-full pl-12 pr-4 py-4 bg-white border-none rounded-lg shadow-[0_4px_20px_rgba(0,0,0,0.04)] focus:ring-2 focus:ring-primary/20 text-on-surface placeholder:text-outline/60 transition-all" placeholder="名前、SKU、タグで検索..." type="text"/>
+</div>
+<!-- Filter Group -->
+<div class="lg:col-span-5 flex flex-wrap gap-3">
+<button class="flex items-center gap-2 px-5 py-4 bg-white rounded-lg text-on-surface font-medium shadow-[0_4px_20px_rgba(0,0,0,0.04)] hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined text-sm">location_on</span>
+                保管場所
+                <span class="material-symbols-outlined text-sm">expand_more</span>
+</button>
+<button class="flex items-center gap-2 px-5 py-4 bg-white rounded-lg text-on-surface font-medium shadow-[0_4px_20px_rgba(0,0,0,0.04)] hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined text-sm">category</span>
+                カテゴリ
+                <span class="material-symbols-outlined text-sm">expand_more</span>
+</button>
+<button class="flex items-center gap-2 px-5 py-4 bg-white rounded-lg text-on-surface font-medium shadow-[0_4px_20px_rgba(0,0,0,0.04)] hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined text-sm">fluid_med</span>
+                コンディション
+                <span class="material-symbols-outlined text-sm">expand_more</span>
+</button>
+</div>
+<!-- Sort -->
+<div class="lg:col-span-2">
+<button class="w-full h-full flex items-center justify-between px-5 py-4 bg-white rounded-lg text-on-surface font-medium shadow-[0_4px_20px_rgba(0,0,0,0.04)] hover:bg-surface-container-low transition-colors">
+<span>並び替え</span>
+<span class="material-symbols-outlined text-sm">swap_vert</span>
+</button>
+</div>
+</div>
+<!-- Inventory Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+<!-- Item Card 1 -->
+<div class="group bg-white rounded-xl overflow-hidden shadow-[0_4px_25px_rgba(0,0,0,0.05)] hover:shadow-[0_20px_50px_rgba(0,0,0,0.08)] transition-all duration-500 flex flex-col">
+<div class="relative h-64 overflow-hidden">
+<img alt="Luxury watch" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBKOczaUC2j20NJ6dHOkwRCi1DXtILPdL4g78SUgbMgudabZ7gqw4vOZFCV1DgYYyvMwTZ3_AUcU73VHoLFLL4-61chO7IjwoODsNP7MY3zvdaQM9jKyGa9XLEDcMGmNOI2VhEmZwLBRPTFx8UhuQRtwNM4fTofOfilkPIVGCJmvwxeeQTilOblqcOcZMgGKraVT-TgibsWwAKjOvrkWZR0T-SBADFN47reJn11qCjZjiTLExWPRYqVea-AyEyb0tmw6qspA2ChhCsj"/>
+<div class="absolute top-4 right-4">
+<span class="bg-tertiary-fixed text-on-tertiary-fixed-variant px-3 py-1 rounded-lg text-[11px] font-bold tracking-tight flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+                        在庫あり
+                    </span>
+</div>
+</div>
+<div class="p-6 flex-grow flex flex-col justify-between">
+<div>
+<span class="font-label text-[10px] uppercase tracking-wider text-outline mb-1 block">高級時計 • AR-992</span>
+<h3 class="font-headline text-xl font-bold text-on-surface mb-2">パテック フィリップ 5711/1A</h3>
+<div class="flex items-center gap-2 text-on-surface text-sm mb-4">
+<span class="material-symbols-outlined text-sm text-outline">location_on</span>
+<span>チューリッヒ、Vault A</span>
+</div>
+</div>
+<div class="flex justify-between items-end border-t border-outline/10 pt-4">
+<div class="flex flex-col">
+<span class="text-[10px] text-outline uppercase font-bold tracking-tighter">価値</span>
+<span class="font-headline font-extrabold text-lg text-on-surface">$184,000</span>
+</div>
+<button class="p-2 bg-surface-container-low rounded-lg text-primary hover:bg-primary hover:text-white transition-all">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Item Card 2 -->
+<div class="group bg-white rounded-xl overflow-hidden shadow-[0_4px_25px_rgba(0,0,0,0.05)] hover:shadow-[0_20px_50px_rgba(0,0,0,0.08)] transition-all duration-500 flex flex-col">
+<div class="relative h-64 overflow-hidden">
+<img alt="Sports car" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD6vW9JFSVg4kUr0b14xFz386--4fAdoaQD3rABei6_QU_gYuBw7_v2C2Ut8unYsZmk0wk9jOX1O4qFMx9yw22Fp83-zlCWuAqCxSkikQUYzXbHIdKIj_0OKQIc8YDKY5uZpMZ7mfZ-1iAyCZ7lLT03Q8k6AeHgXQQ9rBcCQymzuEKBUiBVY9O2nQ73_3gNDX0SPQWFwB1D1FFe-aQNWmtb4B7Ol8ryunRhwBdVh6pvLPv1F9fNmLHkUMzV0YGq32x5SmsQQY3BUmkU"/>
+<div class="absolute top-4 right-4">
+<span class="bg-error-container text-on-error-container px-3 py-1 rounded-lg text-[11px] font-bold tracking-tight flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">warning</span>
+                        残りわずか
+                    </span>
+</div>
+</div>
+<div class="p-6 flex-grow flex flex-col justify-between">
+<div>
+<span class="font-label text-[10px] uppercase tracking-wider text-outline mb-1 block">自動車 • TS-001</span>
+<h3 class="font-headline text-xl font-bold text-on-surface mb-2">テスラ ロードスター プロトタイプ</h3>
+<div class="flex items-center gap-2 text-on-surface text-sm mb-4">
+<span class="material-symbols-outlined text-sm text-outline">location_on</span>
+<span>フリーモント、Hangar 4</span>
+</div>
+</div>
+<div class="flex justify-between items-end border-t border-outline/10 pt-4">
+<div class="flex flex-col">
+<span class="text-[10px] text-outline uppercase font-bold tracking-tighter">価値</span>
+<span class="font-headline font-extrabold text-lg text-on-surface">$250,000</span>
+</div>
+<button class="p-2 bg-surface-container-low rounded-lg text-primary hover:bg-primary hover:text-white transition-all">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Item Card 3 -->
+<div class="group bg-white rounded-xl overflow-hidden shadow-[0_4px_25px_rgba(0,0,0,0.05)] hover:shadow-[0_20px_50px_rgba(0,0,0,0.08)] transition-all duration-500 flex flex-col">
+<div class="relative h-64 overflow-hidden">
+<img alt="Art piece" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDJgJwqKeuG1LocU9P41M1YRHWrCG-hwLoB3XG0wmgkCdfTmtPKDugy4viDw2_S5MeghkDqjKf1czkdfaR3sz33jB-AkHDwSCGCvIcHkNZzfEa7i59dfA47JRYjuSh1vPhv3bVmRAb6lU27vJd2mYxVvMlxEG8cXUOvGPxTHnP0rnJBMQGg-dgEicZS9dI5hWzLHdYILnabmLa1_eMWXXBEnoEZsBX40oatXxQk9KXdyo2NdCj3_K16LExHLzFjmoNZZE8lLLth_z1S"/>
+<div class="absolute top-4 right-4">
+<span class="bg-secondary-fixed text-on-secondary-fixed-variant px-3 py-1 rounded-lg text-[11px] font-bold tracking-tight flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">history</span>
+                        輸送中
+                    </span>
+</div>
+</div>
+<div class="p-6 flex-grow flex flex-col justify-between">
+<div>
+<span class="font-label text-[10px] uppercase tracking-wider text-outline mb-1 block">アート • SC-452</span>
+<h3 class="font-headline text-xl font-bold text-on-surface mb-2">ミニマリスト大理石スタディ</h3>
+<div class="flex items-center gap-2 text-on-surface text-sm mb-4">
+<span class="material-symbols-outlined text-sm text-outline">location_on</span>
+<span>ロンドンへ移動中</span>
+</div>
+</div>
+<div class="flex justify-between items-end border-t border-outline/10 pt-4">
+<div class="flex flex-col">
+<span class="text-[10px] text-outline uppercase font-bold tracking-tighter">価値</span>
+<span class="font-headline font-extrabold text-lg text-on-surface">$42,000</span>
+</div>
+<button class="p-2 bg-surface-container-low rounded-lg text-primary hover:bg-primary hover:text-white transition-all">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Item Card 4 -->
+<div class="group bg-white rounded-xl overflow-hidden shadow-[0_4px_25px_rgba(0,0,0,0.05)] hover:shadow-[0_20px_50px_rgba(0,0,0,0.08)] transition-all duration-500 flex flex-col">
+<div class="relative h-64 overflow-hidden">
+<img alt="Camera lenses" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDjMZ_ZOWYR8QwueKtzs53lcdmBWKnPLflHdnwry6vPKQZN8seU52F-S5mFS9HvwbPfdlX895rAj97tVo2J3A2SpmzLfYly78-n7leBCMStTfFt0R7fy5M_a1hsJNgL9kFVbpEXdE_jvxaevYs7PVKzqzhDCi4eXNsCr4djN0LgA0pyAm-fgPapb2GX1q5aIdQmYBz3jiR_DgOhrLC1p6_8jtzO6GIWlgzOU9mX7gsjI1PJa2D8Nuirow7zxyr8k8WPc3dPoo6qzhYE"/>
+<div class="absolute top-4 right-4">
+<span class="bg-tertiary-fixed text-on-tertiary-fixed-variant px-3 py-1 rounded-lg text-[11px] font-bold tracking-tight flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+                        在庫あり
+                    </span>
+</div>
+</div>
+<div class="p-6 flex-grow flex flex-col justify-between">
+<div>
+<span class="font-label text-[10px] uppercase tracking-wider text-outline mb-1 block">光学機器 • LE-090</span>
+<h3 class="font-headline text-xl font-bold text-on-surface mb-2">ライカ ノクティルックス セット</h3>
+<div class="flex items-center gap-2 text-on-surface text-sm mb-4">
+<span class="material-symbols-outlined text-sm text-outline">location_on</span>
+<span>ベルリン、Archive 2</span>
+</div>
+</div>
+<div class="flex justify-between items-end border-t border-outline/10 pt-4">
+<div class="flex flex-col">
+<span class="text-[10px] text-outline uppercase font-bold tracking-tighter">価値</span>
+<span class="font-headline font-extrabold text-lg text-on-surface">$12,500</span>
+</div>
+<button class="p-2 bg-surface-container-low rounded-lg text-primary hover:bg-primary hover:text-white transition-all">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Pagination -->
+<div class="mt-16 flex items-center justify-between py-8 border-t border-outline/10">
+<span class="text-sm text-outline font-medium">1,248件中 4件を表示</span>
+<div class="flex gap-2">
+<button class="w-10 h-10 flex items-center justify-center rounded-lg border border-outline/20 text-outline hover:bg-white transition-colors">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-lg bg-primary text-white font-bold shadow-lg shadow-primary/20">1</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-lg border border-outline/20 text-on-surface hover:bg-white transition-colors">2</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-lg border border-outline/20 text-on-surface hover:bg-white transition-colors">3</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-lg border border-outline/20 text-outline hover:bg-white transition-colors">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</div>
+</main>
+<!-- FAB for adding item -->
+<button class="fixed bottom-28 right-8 md:bottom-12 md:right-12 w-16 h-16 bg-primary text-white rounded-xl shadow-2xl flex items-center justify-center group active:scale-95 transition-all z-40">
+<span class="material-symbols-outlined text-3xl group-hover:rotate-90 transition-transform duration-500">add</span>
+</button>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-2 bg-[#f4ebd0]/90 dark:bg-stone-900/80 backdrop-blur-xl rounded-t-2xl shadow-[0_-4px_24px_rgba(0,0,0,0.06)] md:hidden border-t border-outline/10">
+<div class="flex flex-col items-center justify-center text-stone-500 dark:text-stone-400 px-3 py-1 hover:text-amber-500 transition-all active:scale-90 duration-200">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-[10px] font-medium font-sans">ダッシュボード</span>
+</div>
+<div class="flex flex-col items-center justify-center text-amber-600 dark:text-amber-400 bg-amber-500/10 dark:bg-amber-900/20 rounded-xl px-3 py-1 active:scale-90 duration-200">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="text-[10px] font-medium font-sans">在庫一覧</span>
+</div>
+<div class="flex flex-col items-center justify-center text-stone-500 dark:text-stone-400 px-3 py-1 hover:text-amber-500 transition-all active:scale-90 duration-200">
+<span class="material-symbols-outlined">add_box</span>
+<span class="text-[10px] font-medium font-sans">新規登録</span>
+</div>
+<div class="flex flex-col items-center justify-center text-stone-500 dark:text-stone-400 px-3 py-1 hover:text-amber-500 transition-all active:scale-90 duration-200">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-[10px] font-medium font-sans">設定</span>
+</div>
+</nav>
+</body></html>

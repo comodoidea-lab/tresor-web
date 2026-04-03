@@ -2,18 +2,139 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Amber Theme (Default) */
 :root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 248, 250, 252;
-  --background-end-rgb: 255, 255, 255;
+  /* Surface colors */
+  --surface: #f8f9fa;
+  --surface-dim: #d9dadb;
+  --surface-bright: #f8f9fa;
+  --surface-container: #edeeef;
+  --surface-container-low: #f3f4f5;
+  --surface-container-lowest: #ffffff;
+  --surface-container-high: #e7e8e9;
+  --surface-container-highest: #e1e3e4;
+  
+  /* On surface */
+  --on-surface: #191c1d;
+  --on-surface-variant: #534434;
+  
+  /* Primary (Amber) */
+  --primary: #865300;
+  --primary-container: #f59d0a;
+  --primary-fixed: #ffddb8;
+  --primary-fixed-dim: #ffb960;
+  --on-primary: #ffffff;
+  --on-primary-container: #613b00;
+  --on-primary-fixed: #2b1700;
+  
+  /* Secondary */
+  --secondary: #333333;
+  --secondary-container: #e4e2e1;
+  --secondary-fixed: #e4e2e1;
+  --secondary-fixed-dim: #c8c6c6;
+  --on-secondary: #ffffff;
+  --on-secondary-container: #656464;
+  --on-secondary-fixed: #1b1c1c;
+  
+  /* Outline */
+  --outline: #867461;
+  --outline-variant: #d9c3ad;
+  
+  /* Error */
+  --error: #ba1a1a;
+  --error-container: #ffdad6;
+  --on-error: #ffffff;
+  --on-error-container: #93000a;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 15, 23, 42;
-    --background-end-rgb: 15, 23, 42;
-  }
+/* Botanical Theme */
+[data-theme="botanical"] {
+  /* Surface colors - warm beige tones */
+  --surface: #faf9f6;
+  --surface-dim: #d9d8d5;
+  --surface-bright: #faf9f6;
+  --surface-container: #f4f3f1;
+  --surface-container-low: #f6f5f3;
+  --surface-container-lowest: #ffffff;
+  --surface-container-high: #e9e8e5;
+  --surface-container-highest: #e4e3e0;
+  
+  /* On surface */
+  --on-surface: #1a1c1a;
+  --on-surface-variant: #414942;
+  
+  /* Primary (Sage Green) */
+  --primary: #316342;
+  --primary-container: #4a7c59;
+  --primary-fixed: #b9efc5;
+  --primary-fixed-dim: #8fbc94;
+  --on-primary: #ffffff;
+  --on-primary-container: #1a3d28;
+  --on-primary-fixed: #003311;
+  
+  /* Secondary */
+  --secondary: #5f5f5f;
+  --secondary-container: #e8e8e6;
+  --secondary-fixed: #e8e8e6;
+  --secondary-fixed-dim: #ccccca;
+  --on-secondary: #ffffff;
+  --on-secondary-container: #444444;
+  --on-secondary-fixed: #2a2a2a;
+  
+  /* Outline - terracotta accent */
+  --outline: #854a03;
+  --outline-variant: #c1c9bf;
+  
+  /* Error */
+  --error: #ba1a1a;
+  --error-container: #ffdad6;
+  --on-error: #ffffff;
+  --on-error-container: #93000a;
+}
+
+/* Midnight Theme */
+[data-theme="midnight"] {
+  /* Surface colors - dark slate */
+  --surface: #1e293b;
+  --surface-dim: #0f172a;
+  --surface-bright: #334155;
+  --surface-container: #2d3748;
+  --surface-container-low: #252f3f;
+  --surface-container-lowest: #1a202c;
+  --surface-container-high: #3d4f5f;
+  --surface-container-highest: #455565;
+  
+  /* On surface - light for dark mode */
+  --on-surface: #f1f5f9;
+  --on-surface-variant: #94a3b8;
+  
+  /* Primary (Deep Blue) */
+  --primary: #60a5fa;
+  --primary-container: #3b82f6;
+  --primary-fixed: #bfdbfe;
+  --primary-fixed-dim: #93c5fd;
+  --on-primary: #0f172a;
+  --on-primary-container: #dbeafe;
+  --on-primary-fixed: #1e3a8a;
+  
+  /* Secondary */
+  --secondary: #94a3b8;
+  --secondary-container: #475569;
+  --secondary-fixed: #cbd5e1;
+  --secondary-fixed-dim: #94a3b8;
+  --on-secondary: #0f172a;
+  --on-secondary-container: #f1f5f9;
+  --on-secondary-fixed: #1e293b;
+  
+  /* Outline */
+  --outline: #64748b;
+  --outline-variant: #334155;
+  
+  /* Error */
+  --error: #f87171;
+  --error-container: #7f1d1d;
+  --on-error: #0f172a;
+  --on-error-container: #fecaca;
 }
 
 html, body {
@@ -34,7 +155,7 @@ html, body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #d97706;
+  background: var(--primary-container);
   border-radius: 2px;
 }
 

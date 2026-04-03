@@ -359,58 +359,58 @@ function ItemEditorModal({ item, templates, defaultTemplateId, onSave, onClose, 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={onClose}>
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm pointer-events-none" />
-      <div className={`relative z-10 w-full sm:max-w-lg max-h-[90vh] overflow-y-auto rounded-t-3xl sm:rounded-3xl shadow-2xl ${isDark ? 'bg-slate-800' : 'bg-white'}`} onClick={(e) => e.stopPropagation()}>
-        <div className="sticky top-0 z-10 flex items-center justify-between px-6 pt-6 pb-4 border-b border-slate-200 dark:border-slate-700 bg-inherit rounded-t-3xl">
-          <h2 className="text-lg font-bold text-slate-800 dark:text-white">{item ? 'アイテム編集' : 'モノを登録'}</h2>
-          <button onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors"><X size={20} className="text-slate-500" /></button>
+      <div className="relative z-10 w-full sm:max-w-lg max-h-[90vh] overflow-y-auto rounded-t-3xl sm:rounded-3xl shadow-2xl bg-surface-container-lowest" onClick={(e) => e.stopPropagation()}>
+        <div className="sticky top-0 z-10 flex items-center justify-between px-6 pt-6 pb-4 border-b border-outline-variant/20 bg-inherit rounded-t-3xl">
+          <h2 className="text-lg font-bold text-on-surface">{item ? 'アイテム編集' : 'モノを登録'}</h2>
+          <button onClick={onClose} className="p-2 hover:bg-surface-container rounded-full transition-colors"><X size={20} className="text-secondary" /></button>
         </div>
         <div className="p-6 space-y-5">
           <div>
-            <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2 block">テンプレート</label>
-            <select value={templateId} onChange={(e) => { setTemplateId(e.target.value); const tpl = templates.find((t) => t.id === e.target.value); setSubLocation(tpl?.subLocations[0] ?? ''); setAttributes({}); }} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-2xl text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-400 font-medium">
+            <label className="text-xs font-bold text-secondary uppercase tracking-wide mb-2 block">テンプレート</label>
+            <select value={templateId} onChange={(e) => { setTemplateId(e.target.value); const tpl = templates.find((t) => t.id === e.target.value); setSubLocation(tpl?.subLocations[0] ?? ''); setAttributes({}); }} className="w-full px-4 py-3 bg-surface-container border border-outline-variant/20 rounded-2xl text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20 font-medium">
               {templates.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
             </select>
           </div>
           <div>
-            <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2 block">アイテム名 *</label>
-            <input type="text" value={name} onChange={(e) => { setName(e.target.value); setError(''); }} placeholder="アイテム名を入力" className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-2xl text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 font-medium" autoFocus />
+            <label className="text-xs font-bold text-secondary uppercase tracking-wide mb-2 block">アイテム名 *</label>
+            <input type="text" value={name} onChange={(e) => { setName(e.target.value); setError(''); }} placeholder="アイテム名を入力" className="w-full px-4 py-3 bg-surface-container border border-outline-variant/20 rounded-2xl text-on-surface placeholder:text-secondary/40 focus:outline-none focus:ring-2 focus:ring-primary/20 font-medium" autoFocus />
           </div>
           <div>
-            <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2 block">数量</label>
+            <label className="text-xs font-bold text-secondary uppercase tracking-wide mb-2 block">数量</label>
             <div className="flex items-center gap-4">
-              <button onClick={() => setQuantity(Math.max(0, quantity - 1))} className="w-10 h-10 flex items-center justify-center bg-slate-100 dark:bg-slate-700 rounded-full text-slate-600 dark:text-slate-300 font-bold text-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">−</button>
-              <input type="number" value={quantity} onChange={(e) => setQuantity(Math.max(0, parseInt(e.target.value) || 0))} className="w-20 text-center px-2 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-800 dark:text-white font-bold focus:outline-none focus:ring-2 focus:ring-amber-400" />
-              <button onClick={() => setQuantity(quantity + 1)} className="w-10 h-10 flex items-center justify-center bg-amber-100 dark:bg-amber-900/30 rounded-full text-amber-600 font-bold text-lg hover:bg-amber-200 dark:hover:bg-amber-900/50 transition-colors">+</button>
+              <button onClick={() => setQuantity(Math.max(0, quantity - 1))} className="w-10 h-10 flex items-center justify-center bg-surface-container rounded-full text-secondary font-bold text-lg hover:bg-surface-container-high transition-colors">−</button>
+              <input type="number" value={quantity} onChange={(e) => setQuantity(Math.max(0, parseInt(e.target.value) || 0))} className="w-20 text-center px-2 py-2 bg-surface-container border border-outline-variant/20 rounded-xl text-on-surface font-bold focus:outline-none focus:ring-2 focus:ring-primary/20" />
+              <button onClick={() => setQuantity(quantity + 1)} className="w-10 h-10 flex items-center justify-center bg-primary-container/20 rounded-full text-primary font-bold text-lg hover:bg-primary-container/30 transition-colors">+</button>
             </div>
           </div>
           {template && template.subLocations.length > 0 && (
             <div>
-              <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2 block">保管場所</label>
+              <label className="text-xs font-bold text-secondary uppercase tracking-wide mb-2 block">保管場所</label>
               <div className="flex flex-wrap gap-2">
                 {template.subLocations.map((loc) => (
-                  <button key={loc} onClick={() => setSubLocation(loc)} className={`px-3 py-1.5 rounded-full text-sm font-bold transition-colors ${subLocation === loc ? 'bg-amber-500 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'}`}>{loc}</button>
+                  <button key={loc} onClick={() => setSubLocation(loc)} className={`px-3 py-1.5 rounded-full text-sm font-bold transition-colors ${subLocation === loc ? 'bg-primary text-on-primary' : 'bg-surface-container text-secondary hover:bg-surface-container-high'}`}>{loc}</button>
                 ))}
               </div>
             </div>
           )}
           {template && template.attributes.length > 0 && (
             <div className="space-y-4">
-              <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide block">属性</label>
+              <label className="text-xs font-bold text-secondary uppercase tracking-wide block">属性</label>
               {template.attributes.map((attr) => (
                 <div key={attr.name}>
-                  <label className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5 block">{attr.name}</label>
+                  <label className="text-sm font-bold text-on-surface mb-1.5 block">{attr.name}</label>
                   {(attr.type === 'text' || attr.type === 'number' || attr.type === 'tag') ? (
-                    <input type={attr.type === 'number' ? 'number' : 'text'} value={attributes[attr.name] ?? ''} onChange={(e) => setAttributes({ ...attributes, [attr.name]: e.target.value })} placeholder={attr.name} className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 font-medium" />
+                    <input type={attr.type === 'number' ? 'number' : 'text'} value={attributes[attr.name] ?? ''} onChange={(e) => setAttributes({ ...attributes, [attr.name]: e.target.value })} placeholder={attr.name} className="w-full px-4 py-2.5 bg-surface-container border border-outline-variant/20 rounded-xl text-on-surface placeholder:text-secondary/40 focus:outline-none focus:ring-2 focus:ring-primary/20 font-medium" />
                   ) : attr.type === 'date' ? (
-                    <input type="date" value={attributes[attr.name] ?? ''} onChange={(e) => setAttributes({ ...attributes, [attr.name]: e.target.value })} className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-400 font-medium" />
+                    <input type="date" value={attributes[attr.name] ?? ''} onChange={(e) => setAttributes({ ...attributes, [attr.name]: e.target.value })} className="w-full px-4 py-2.5 bg-surface-container border border-outline-variant/20 rounded-xl text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20 font-medium" />
                   ) : attr.type === 'url' ? (
-                    <input type="url" value={attributes[attr.name] ?? ''} onChange={(e) => setAttributes({ ...attributes, [attr.name]: e.target.value })} placeholder="https://..." className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 font-medium" />
+                    <input type="url" value={attributes[attr.name] ?? ''} onChange={(e) => setAttributes({ ...attributes, [attr.name]: e.target.value })} placeholder="https://..." className="w-full px-4 py-2.5 bg-surface-container border border-outline-variant/20 rounded-xl text-on-surface placeholder:text-secondary/40 focus:outline-none focus:ring-2 focus:ring-primary/20 font-medium" />
                   ) : attr.type === 'checkbox' ? (
                     <label className="flex items-center gap-3 cursor-pointer">
-                      <div onClick={() => setAttributes({ ...attributes, [attr.name]: attributes[attr.name] === 'true' ? 'false' : 'true' })} className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-colors cursor-pointer ${attributes[attr.name] === 'true' ? 'bg-amber-500 border-amber-500' : 'border-slate-300 dark:border-slate-600'}`}>
-                        {attributes[attr.name] === 'true' && <Check size={14} className="text-white" />}
+                      <div onClick={() => setAttributes({ ...attributes, [attr.name]: attributes[attr.name] === 'true' ? 'false' : 'true' })} className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-colors cursor-pointer ${attributes[attr.name] === 'true' ? 'bg-primary border-primary' : 'border-outline'}`}>
+                        {attributes[attr.name] === 'true' && <Check size={14} className="text-on-primary" />}
                       </div>
-                      <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{attr.name}</span>
+                      <span className="text-sm font-medium text-on-surface">{attr.name}</span>
                     </label>
                   ) : null}
                 </div>
@@ -419,20 +419,20 @@ function ItemEditorModal({ item, templates, defaultTemplateId, onSave, onClose, 
           )}
           {/* Note field — always visible, multiline */}
           <div>
-            <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2 block">ノート</label>
+            <label className="text-xs font-bold text-secondary uppercase tracking-wide mb-2 block">ノート</label>
             <textarea
               value={note}
               onChange={(e) => setNote(e.target.value)}
               placeholder="自由にメモを記入できます（改行可）"
               rows={4}
-              className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-2xl text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 font-medium text-sm resize-none leading-relaxed"
+              className="w-full px-4 py-3 bg-surface-container border border-outline-variant/20 rounded-2xl text-on-surface placeholder:text-secondary/40 focus:outline-none focus:ring-2 focus:ring-primary/20 font-medium text-sm resize-none leading-relaxed"
             />
           </div>
         </div>
-        {error && <p className="px-6 pb-2 text-red-500 text-sm font-bold">{error}</p>}
-        <div className="sticky bottom-0 flex gap-3 px-6 pb-6 pt-4 bg-inherit border-t border-slate-200 dark:border-slate-700">
-          <button onClick={onClose} className="flex-1 py-3 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold rounded-2xl hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">キャンセル</button>
-          <button onClick={handleSave} disabled={saving} className="flex-1 py-3 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-2xl transition-colors disabled:opacity-60">{saving ? '保存中...' : item ? '保存する' : '追加する'}</button>
+        {error && <p className="px-6 pb-2 text-error text-sm font-bold">{error}</p>}
+        <div className="sticky bottom-0 flex gap-3 px-6 pb-6 pt-4 bg-inherit border-t border-outline-variant/20">
+          <button onClick={onClose} className="flex-1 py-3 bg-surface-container text-secondary font-bold rounded-2xl hover:bg-surface-container-high transition-colors">キャンセル</button>
+          <button onClick={handleSave} disabled={saving} className="flex-1 py-3 bg-primary-container hover:bg-primary text-on-primary-container font-bold rounded-2xl transition-colors disabled:opacity-60">{saving ? '保存中...' : item ? '保存する' : '追加する'}</button>
         </div>
       </div>
     </div>
@@ -491,40 +491,40 @@ function TemplateEditorModal({ template, onSave, onDelete, onClose, isDark }: Te
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={onClose}>
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm pointer-events-none" />
-      <div className={`relative z-10 w-full sm:max-w-lg max-h-[85vh] overflow-y-auto rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-2xl ${isDark ? 'bg-slate-900' : 'bg-white'}`} onClick={(e) => e.stopPropagation()}>
-        <div className="sticky top-0 z-10 flex items-center justify-between px-8 pt-6 pb-5 border-b border-slate-100 dark:border-slate-800 bg-inherit rounded-t-[2.5rem]">
-          <h2 className="text-xl font-bold text-slate-800 dark:text-white">{template ? 'テンプレート編集' : 'テンプレート作成'}</h2>
-          <button onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors"><X size={20} className="text-slate-400" /></button>
+      <div className="relative z-10 w-full sm:max-w-lg max-h-[85vh] overflow-y-auto rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-2xl bg-surface-container-lowest" onClick={(e) => e.stopPropagation()}>
+        <div className="sticky top-0 z-10 flex items-center justify-between px-8 pt-6 pb-5 border-b border-outline-variant/20 bg-inherit rounded-t-[2.5rem]">
+          <h2 className="text-xl font-bold text-on-surface">{template ? 'テンプレート編集' : 'テンプレート作成'}</h2>
+          <button onClick={onClose} className="p-2 hover:bg-surface-container rounded-full transition-colors"><X size={20} className="text-secondary" /></button>
         </div>
         <div className="px-8 py-6 space-y-6">
-          <input type="text" value={name} onChange={(e) => { setName(e.target.value); setError(''); }} placeholder="名称 (例: 冷蔵庫)" className="w-full px-5 py-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-sm font-bold text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400" autoFocus />
+          <input type="text" value={name} onChange={(e) => { setName(e.target.value); setError(''); }} placeholder="名称 (例: 冷蔵庫)" className="w-full px-5 py-4 bg-surface-container border border-outline-variant/20 rounded-2xl text-sm font-bold text-on-surface placeholder:text-secondary/40 focus:outline-none focus:ring-2 focus:ring-primary/20" autoFocus />
           <div>
             <div className="flex items-center justify-between mb-3">
-              <span className="text-[10px] font-bold text-slate-400">階層オプション</span>
-              <button onClick={addSubLocation} className="text-amber-600 text-[10px] font-bold hover:text-amber-700">+ 追加</button>
+              <span className="text-[10px] font-bold text-secondary">階層オプション</span>
+              <button onClick={addSubLocation} className="text-primary text-[10px] font-bold hover:text-primary-container">+ 追加</button>
             </div>
             <div className="space-y-3">
               {subLocations.map((loc, i) => (
                 <div key={i} className="flex items-center gap-2">
-                  <input type="text" value={loc} onChange={(e) => updateSubLocation(i, e.target.value)} className="flex-1 px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400" />
-                  <button onClick={() => removeSubLocation(i)} className="p-2 text-slate-300 hover:text-red-400 transition-colors"><Trash2 size={16} /></button>
+                  <input type="text" value={loc} onChange={(e) => updateSubLocation(i, e.target.value)} className="flex-1 px-4 py-3 bg-surface-container border border-outline-variant/20 rounded-xl text-sm font-bold text-on-surface placeholder:text-secondary/40 focus:outline-none focus:ring-2 focus:ring-primary/20" />
+                  <button onClick={() => removeSubLocation(i)} className="p-2 text-secondary/40 hover:text-error transition-colors"><Trash2 size={16} /></button>
                 </div>
               ))}
             </div>
           </div>
           <div>
             <div className="flex items-center justify-between mb-3">
-              <span className="text-[10px] font-bold text-slate-400">デフォルト属性</span>
-              <button onClick={addAttribute} className="text-amber-600 text-[10px] font-bold hover:text-amber-700">+ 追加</button>
+              <span className="text-[10px] font-bold text-secondary">デフォルト属性</span>
+              <button onClick={addAttribute} className="text-primary text-[10px] font-bold hover:text-primary-container">+ 追加</button>
             </div>
             <div className="space-y-3">
               {attributes.map((attr, i) => (
-                <div key={i} className="bg-slate-50 dark:bg-slate-800 p-3 rounded-2xl border border-slate-100 dark:border-slate-700 space-y-2">
+                <div key={i} className="bg-surface-container p-3 rounded-2xl border border-outline-variant/20 space-y-2">
                   <div className="flex items-center gap-2">
-                    <input type="text" value={attr.name} onChange={(e) => updateAttribute(i, 'name', e.target.value)} placeholder="項目名" className="flex-1 px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-bold text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400" />
-                    <button onClick={() => removeAttribute(i)} className="p-2 text-slate-300 hover:text-red-400 transition-colors"><Trash2 size={16} /></button>
+                    <input type="text" value={attr.name} onChange={(e) => updateAttribute(i, 'name', e.target.value)} placeholder="項目名" className="flex-1 px-3 py-2 bg-surface-container-lowest border border-outline-variant/20 rounded-lg text-sm font-bold text-on-surface placeholder:text-secondary/40 focus:outline-none focus:ring-2 focus:ring-primary/20" />
+                    <button onClick={() => removeAttribute(i)} className="p-2 text-secondary/40 hover:text-error transition-colors"><Trash2 size={16} /></button>
                   </div>
-                  <select value={attr.type} onChange={(e) => updateAttribute(i, 'type', e.target.value)} className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-amber-400 font-medium text-sm">
+                  <select value={attr.type} onChange={(e) => updateAttribute(i, 'type', e.target.value)} className="w-full px-3 py-2 bg-surface-container-lowest border border-outline-variant/20 rounded-lg text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20 font-medium text-sm">
                     {Object.entries(attrTypeLabels).map(([val, label]) => <option key={val} value={val}>{label}</option>)}
                   </select>
                 </div>
@@ -532,13 +532,13 @@ function TemplateEditorModal({ template, onSave, onDelete, onClose, isDark }: Te
             </div>
           </div>
         </div>
-        {error && <p className="px-8 pb-2 text-red-500 text-sm font-bold">{error}</p>}
+        {error && <p className="px-8 pb-2 text-error text-sm font-bold">{error}</p>}
         <div className="px-8 pb-8 space-y-4">
-          <button onClick={handleSave} disabled={saving} className="w-full py-4 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-3xl shadow-sm transition-colors disabled:opacity-60">
+          <button onClick={handleSave} disabled={saving} className="w-full py-4 bg-primary-container hover:bg-primary text-on-primary-container font-bold rounded-3xl shadow-sm transition-colors disabled:opacity-60">
             {saving ? '保存中...' : '保存する'}
           </button>
           {template && onDelete && (
-            <button onClick={handleDelete} className="w-full py-2 text-center text-xs font-bold text-slate-400 hover:text-red-500 transition-colors">
+            <button onClick={handleDelete} className="w-full py-2 text-center text-xs font-bold text-secondary/50 hover:text-error transition-colors">
               このテンプレートを削除
             </button>
           )}
@@ -555,24 +555,23 @@ function TemplateEditorModal({ template, onSave, onDelete, onClose, isDark }: Te
 interface PresetSelectionModalProps {
   onSelect: (preset: Omit<Template, 'id' | 'createdAt' | 'updatedAt'>) => void;
   onClose: () => void;
-  isDark: boolean;
 }
 
-function PresetSelectionModal({ onSelect, onClose, isDark }: PresetSelectionModalProps) {
+function PresetSelectionModal({ onSelect, onClose }: PresetSelectionModalProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={onClose}>
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm pointer-events-none" />
-      <div className={`relative z-10 w-full sm:max-w-md max-h-[80vh] overflow-y-auto rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-2xl ${isDark ? 'bg-slate-900' : 'bg-white'}`} onClick={(e) => e.stopPropagation()}>
-        <div className="sticky top-0 z-10 flex items-center justify-between px-6 py-5 border-b border-slate-100 dark:border-slate-800 bg-inherit rounded-t-[2.5rem]">
-          <h2 className="text-lg font-bold text-slate-800 dark:text-white">プリセット</h2>
-          <button onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors"><X size={20} className="text-slate-500" /></button>
+      <div className="relative z-10 w-full sm:max-w-md max-h-[80vh] overflow-y-auto rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-2xl bg-surface-container-lowest" onClick={(e) => e.stopPropagation()}>
+        <div className="sticky top-0 z-10 flex items-center justify-between px-6 py-5 border-b border-outline-variant/20 bg-inherit rounded-t-[2.5rem]">
+          <h2 className="text-lg font-bold text-on-surface">プリセット</h2>
+          <button onClick={onClose} className="p-2 hover:bg-surface-container rounded-full transition-colors"><X size={20} className="text-secondary" /></button>
         </div>
         <div className="p-4 space-y-3">
           {PRESET_TEMPLATES.map((preset) => (
             <button
               key={preset.name}
               onClick={() => onSelect(preset)}
-              className={`w-full text-left p-5 rounded-3xl font-bold text-slate-800 dark:text-white text-base hover:opacity-80 transition-opacity ${isDark ? 'bg-slate-800' : 'bg-slate-50'}`}
+              className="w-full text-left p-5 rounded-3xl font-bold text-on-surface text-base hover:opacity-80 transition-opacity bg-surface-container"
             >
               {preset.name}
             </button>
@@ -819,7 +818,6 @@ function LibraryTab({ templates, items, onEditItem, onDeleteItem, onQuantityChan
   const [activeAttributeFilter, setActiveAttributeFilter] = useState<{ key: string; value: string } | null>(null);
   const [sortMode, setSortMode] = useState(false);
   const [deleteMode, setDeleteMode] = useState(false);
-  const [swipedId, setSwipedId] = useState<string | null>(null);
 
   // Delete confirmation modal state
   const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; itemId: string | null; itemName: string }>({
@@ -855,10 +853,6 @@ function LibraryTab({ templates, items, onEditItem, onDeleteItem, onQuantityChan
   const rowRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   const listRef = useRef<HTMLDivElement>(null);
   const didDrag = useRef(false);
-
-  // Swipe state with spring physics
-  const swipeRef = useRef<{ itemId: string; startX: number; startY: number; active: boolean; currentX: number } | null>(null);
-  const [swipeOffset, setSwipeOffset] = useState(0);
 
   const handleReorder = (fromIdx: number, toIdx: number) => {
     if (fromIdx === toIdx) return;
@@ -973,58 +967,8 @@ function LibraryTab({ templates, items, onEditItem, onDeleteItem, onQuantityChan
     return { transition: 'transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)' };
   };
 
-  // Swipe with spring physics
-  const onSwipeStart = (e: React.PointerEvent, itemId: string) => {
-    if (sortMode || deleteMode) return;
-    swipeRef.current = { itemId, startX: e.clientX, startY: e.clientY, active: false, currentX: 0 };
-  };
-
-  const onSwipeMove = (e: React.PointerEvent) => {
-    if (sortMode || deleteMode || !swipeRef.current) return;
-    const dx = e.clientX - swipeRef.current.startX;
-    const dy = e.clientY - swipeRef.current.startY;
-    if (!swipeRef.current.active) {
-      if (Math.abs(dx) > 12 && Math.abs(dx) > Math.abs(dy)) {
-        swipeRef.current.active = true;
-        e.preventDefault();
-      } else if (Math.abs(dy) > 12) {
-        swipeRef.current = null;
-        return;
-      }
-    }
-    if (swipeRef.current?.active && dx < 0) {
-      e.preventDefault();
-      // Spring resistance when swiping
-      const resistance = 0.6;
-      const offset = Math.max(-120, dx * resistance);
-      setSwipeOffset(offset);
-      swipeRef.current.currentX = offset;
-    }
-  };
-
-  const onSwipeEnd = (e: React.PointerEvent, itemId: string) => {
-    if (!swipeRef.current) {
-      setSwipeOffset(0);
-      return;
-    }
-    const dx = e.clientX - swipeRef.current.startX;
-    if (swipeRef.current.active && dx < -60) {
-      setSwipedId(itemId);
-      setSwipeOffset(-80);
-    } else if (swipeRef.current.active && dx > 20) {
-      setSwipedId(null);
-      setSwipeOffset(0);
-    } else {
-      // Spring back
-      setSwipeOffset(0);
-    }
-    swipeRef.current = null;
-  };
-
   const openDeleteModal = (itemId: string, itemName: string) => {
     setDeleteModal({ isOpen: true, itemId, itemName });
-    setSwipedId(null);
-    setSwipeOffset(0);
   };
 
   const confirmDelete = () => {
@@ -1035,7 +979,7 @@ function LibraryTab({ templates, items, onEditItem, onDeleteItem, onQuantityChan
   };
 
   return (
-    <div className="space-y-6" onClick={() => { swipedId && setSwipedId(null); setSwipeOffset(0); }}>
+    <div className="space-y-6">
       {/* Delete Confirmation Modal */}
       <DeleteConfirmModal
         isOpen={deleteModal.isOpen}
@@ -1111,7 +1055,7 @@ function LibraryTab({ templates, items, onEditItem, onDeleteItem, onQuantityChan
       {/* Sort / Delete mode toolbar */}
       <div className="flex items-center justify-end gap-2 bg-surface-container-low p-2 rounded-xl">
         <button
-          onClick={() => { setSortMode(!sortMode); setDeleteMode(false); setSwipedId(null); setSwipeOffset(0); }}
+          onClick={() => { setSortMode(!sortMode); setDeleteMode(false); }}
           className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold transition-all active:scale-95 ${
             sortMode
               ? 'bg-primary-container text-white shadow-sm'
@@ -1122,7 +1066,7 @@ function LibraryTab({ templates, items, onEditItem, onDeleteItem, onQuantityChan
           並べ替え
         </button>
         <button
-          onClick={() => { setDeleteMode(!deleteMode); setSortMode(false); setSwipedId(null); setSwipeOffset(0); }}
+          onClick={() => { setDeleteMode(!deleteMode); setSortMode(false); }}
           className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold transition-all active:scale-95 ${
             deleteMode
               ? 'bg-error text-white'
@@ -1146,7 +1090,6 @@ function LibraryTab({ templates, items, onEditItem, onDeleteItem, onQuantityChan
         {filtered.map((item, index) => {
           const template = templates.find((t) => t.id === item.templateId);
           const isDragging = activeDragId === item.id;
-          const isSwiped = swipedId === item.id;
           const isInEditMode = sortMode || deleteMode;
           return (
             <div
@@ -1156,29 +1099,10 @@ function LibraryTab({ templates, items, onEditItem, onDeleteItem, onQuantityChan
                 else rowRefs.current.delete(item.id);
               }}
               style={getRowStyle(item.id, index)}
-              className="relative overflow-hidden rounded-2xl"
-              onPointerDown={!isInEditMode ? (e) => onSwipeStart(e, item.id) : undefined}
-              onPointerMove={!isInEditMode ? onSwipeMove : undefined}
-              onPointerUp={!isInEditMode ? (e) => onSwipeEnd(e, item.id) : undefined}
-              onPointerCancel={!isInEditMode ? () => { swipeRef.current = null; setSwipeOffset(0); } : undefined}
+              className="relative rounded-2xl"
             >
-              {/* Swipe delete button (revealed behind card) */}
-              <div className="absolute right-0 top-0 bottom-0 w-20 bg-error flex items-center justify-center rounded-r-2xl">
-                <button
-                  onClick={(e) => { e.stopPropagation(); openDeleteModal(item.id, item.name); }}
-                  className="flex flex-col items-center gap-1 transition-transform active:scale-90"
-                >
-                  <Trash2 size={20} className="text-white" />
-                  <span className="text-white text-[10px] font-bold">削除</span>
-                </button>
-              </div>
-
-              {/* Card with spring physics swipe */}
+              {/* Card */}
               <div
-                style={{
-                  transform: isSwiped ? `translateX(-80px)` : `translateX(${swipeOffset}px)`,
-                  transition: swipeRef.current ? 'none' : 'transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)',
-                }}
                 className={`bg-surface-container-lowest p-4 rounded-2xl shadow-tonal border cursor-pointer select-none transition-all
                   ${isDragging ? 'border-primary-container scale-[1.02] z-50 shadow-elevated' : 'border-outline-variant/10 hover:shadow-elevated hover:-translate-y-0.5'}
                   ${deleteMode ? 'border-error/50 bg-error-container/10' : ''}
@@ -1187,11 +1111,6 @@ function LibraryTab({ templates, items, onEditItem, onDeleteItem, onQuantityChan
                 onClick={(e) => {
                   if (sortMode || didDrag.current) {
                     e.preventDefault();
-                    return;
-                  }
-                  if (isSwiped) {
-                    setSwipedId(null);
-                    setSwipeOffset(0);
                     return;
                   }
                   onEditItem(item);
@@ -1345,10 +1264,6 @@ function TemplatesTab({ templates, onCreateTemplate, onEditTemplate, onDeleteTem
   const listRef = useRef<HTMLDivElement>(null);
   const didDrag = useRef(false);
 
-  // Swipe state with spring physics
-  const swipeRef = useRef<{ itemId: string; startX: number; startY: number; active: boolean; currentX: number } | null>(null);
-  const [swipeOffset, setSwipeOffset] = useState(0);
-
   const handleReorder = (fromIdx: number, toIdx: number) => {
     if (fromIdx === toIdx) return;
     const newTemplates = [...templates];
@@ -1437,58 +1352,8 @@ function TemplatesTab({ templates, onCreateTemplate, onEditTemplate, onDeleteTem
     return { transition: 'transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)' };
   };
 
-  // Swipe with spring physics
-  const onSwipeStart = (e: React.PointerEvent, itemId: string) => {
-    if (sortMode || deleteMode) return;
-    swipeRef.current = { itemId, startX: e.clientX, startY: e.clientY, active: false, currentX: 0 };
-  };
-
-  const onSwipeMove = (e: React.PointerEvent) => {
-    if (sortMode || deleteMode || !swipeRef.current) return;
-    const dx = e.clientX - swipeRef.current.startX;
-    const dy = e.clientY - swipeRef.current.startY;
-    if (!swipeRef.current.active) {
-      if (Math.abs(dx) > 12 && Math.abs(dx) > Math.abs(dy)) {
-        swipeRef.current.active = true;
-        e.preventDefault();
-      } else if (Math.abs(dy) > 12) {
-        swipeRef.current = null;
-        return;
-      }
-    }
-    if (swipeRef.current?.active && dx < 0) {
-      e.preventDefault();
-      // Spring resistance when swiping
-      const resistance = 0.6;
-      const offset = Math.max(-120, dx * resistance);
-      setSwipeOffset(offset);
-      swipeRef.current.currentX = offset;
-    }
-  };
-
-  const onSwipeEnd = (e: React.PointerEvent, itemId: string) => {
-    if (!swipeRef.current) {
-      setSwipeOffset(0);
-      return;
-    }
-    const dx = e.clientX - swipeRef.current.startX;
-    if (swipeRef.current.active && dx < -60) {
-      setSwipedId(itemId);
-      setSwipeOffset(-80);
-    } else if (swipeRef.current.active && dx > 20) {
-      setSwipedId(null);
-      setSwipeOffset(0);
-    } else {
-      // Spring back
-      setSwipeOffset(0);
-    }
-    swipeRef.current = null;
-  };
-
   const openDeleteModal = (templateId: string, templateName: string) => {
     setDeleteModal({ isOpen: true, templateId, templateName });
-    setSwipedId(null);
-    setSwipeOffset(0);
   };
 
   const confirmDelete = () => {
@@ -1499,7 +1364,7 @@ function TemplatesTab({ templates, onCreateTemplate, onEditTemplate, onDeleteTem
   };
 
   return (
-    <div className="space-y-6" onClick={() => { swipedId && setSwipedId(null); setSwipeOffset(0); }}>
+    <div className="space-y-6">
       {/* Delete Confirmation Modal */}
       <DeleteConfirmModal
         isOpen={deleteModal.isOpen}
@@ -1541,7 +1406,7 @@ function TemplatesTab({ templates, onCreateTemplate, onEditTemplate, onDeleteTem
       {/* Sort / Delete mode toolbar */}
       <div className="flex items-center justify-end gap-2 bg-surface-container-low p-2 rounded-xl">
         <button
-          onClick={() => { setSortMode(!sortMode); setDeleteMode(false); setSwipedId(null); setSwipeOffset(0); }}
+          onClick={() => { setSortMode(!sortMode); setDeleteMode(false); }}
           className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold transition-all active:scale-95 ${
             sortMode
               ? 'bg-primary-container text-white shadow-sm'
@@ -1552,7 +1417,7 @@ function TemplatesTab({ templates, onCreateTemplate, onEditTemplate, onDeleteTem
           並べ替え
         </button>
         <button
-          onClick={() => { setDeleteMode(!deleteMode); setSortMode(false); setSwipedId(null); setSwipeOffset(0); }}
+          onClick={() => { setDeleteMode(!deleteMode); setSortMode(false); }}
           className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold transition-all active:scale-95 ${
             deleteMode
               ? 'bg-error text-white'
@@ -1575,36 +1440,16 @@ function TemplatesTab({ templates, onCreateTemplate, onEditTemplate, onDeleteTem
       >
         {templates.map((template, index) => {
           const isDragging = activeDragId === template.id;
-          const isSwiped = swipedId === template.id;
           const isInEditMode = sortMode || deleteMode;
           return (
             <div
               key={template.id}
               ref={(el) => { if (el) rowRefs.current.set(template.id, el); else rowRefs.current.delete(template.id); }}
               style={getRowStyle(template.id, index)}
-              className="relative overflow-hidden rounded-2xl"
-              onPointerDown={!isInEditMode ? (e) => onSwipeStart(e, template.id) : undefined}
-              onPointerMove={!isInEditMode ? onSwipeMove : undefined}
-              onPointerUp={!isInEditMode ? (e) => onSwipeEnd(e, template.id) : undefined}
-              onPointerCancel={!isInEditMode ? () => { swipeRef.current = null; setSwipeOffset(0); } : undefined}
+              className="relative rounded-2xl"
             >
-              {/* Swipe delete button */}
-              <div className="absolute right-0 top-0 bottom-0 w-20 bg-error flex items-center justify-center rounded-r-2xl">
-                <button
-                  onClick={(e) => { e.stopPropagation(); openDeleteModal(template.id, template.name); }}
-                  className="flex flex-col items-center gap-1 transition-transform active:scale-90"
-                >
-                  <Trash2 size={20} className="text-white" />
-                  <span className="text-white text-[10px] font-bold">削除</span>
-                </button>
-              </div>
-
-              {/* Card with spring physics swipe */}
+              {/* Card */}
               <button
-                style={{ 
-                  transform: isSwiped ? `translateX(-80px)` : `translateX(${swipeOffset}px)`,
-                  transition: swipeRef.current ? 'none' : 'transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)'
-                }}
                 className={`w-full h-full bg-surface-container-lowest p-5 rounded-2xl border select-none flex flex-col justify-between transition-all text-left
                   ${isDragging ? 'border-primary-container scale-[1.02] z-50 shadow-elevated' : 'border-outline-variant/10 shadow-tonal hover:shadow-elevated hover:-translate-y-0.5'}
                   ${deleteMode ? 'border-error/50 bg-error-container/10' : ''}
@@ -1612,7 +1457,6 @@ function TemplatesTab({ templates, onCreateTemplate, onEditTemplate, onDeleteTem
                 `}
                 onClick={() => {
                   if (sortMode || didDrag.current) return;
-                  if (isSwiped) { setSwipedId(null); setSwipeOffset(0); return; }
                   onEditTemplate(template);
                 }}
               >
@@ -1842,19 +1686,34 @@ function SettingsTab({ settings, onUpdateSettings, templates, items, onDeleteAll
 
       {/* Theme */}
       <section className="space-y-3">
-        <h3 className="text-xs font-bold text-secondary/50 uppercase tracking-wider ml-1">テーマ設定</h3>
+        <h3 className="text-xs font-bold text-secondary/50 uppercase tracking-wider ml-1">カラーテーマ</h3>
         <div className="bg-surface-container-lowest rounded-2xl overflow-hidden border border-outline-variant/10 shadow-tonal">
-          <button onClick={() => onUpdateSettings({ theme: 'light' })} className="w-full flex items-center justify-between p-4 border-b border-outline-variant/10 hover:bg-surface-container transition-colors active:scale-[0.99]">
-            <div className="flex items-center gap-3"><div className="w-8 h-8 bg-surface-container rounded-lg flex items-center justify-center"><Sun size={18} className="text-secondary" /></div><span className="font-bold text-on-surface">ライトモード</span></div>
-            {settings.theme === 'light' && <div className="w-3 h-3 rounded-full bg-primary-container animate-in zoom-in duration-200" />}
+          <button onClick={() => onUpdateSettings({ colorTheme: 'amber' })} className="w-full flex items-center justify-between p-4 border-b border-outline-variant/10 hover:bg-surface-container transition-colors active:scale-[0.99]">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-amber-500 rounded-lg flex items-center justify-center">
+                <div className="w-4 h-4 bg-white rounded-full" />
+              </div>
+              <span className="font-bold text-on-surface">アンバー</span>
+            </div>
+            {settings.colorTheme === 'amber' && <div className="w-3 h-3 rounded-full bg-primary-container animate-in zoom-in duration-200" />}
           </button>
-          <button onClick={() => onUpdateSettings({ theme: 'dark' })} className="w-full flex items-center justify-between p-4 border-b border-outline-variant/10 hover:bg-surface-container transition-colors active:scale-[0.99]">
-            <div className="flex items-center gap-3"><div className="w-8 h-8 bg-surface-container rounded-lg flex items-center justify-center"><Moon size={18} className="text-secondary" /></div><span className="font-bold text-on-surface">ダークモード</span></div>
-            {settings.theme === 'dark' && <div className="w-3 h-3 rounded-full bg-primary-container animate-in zoom-in duration-200" />}
+          <button onClick={() => onUpdateSettings({ colorTheme: 'botanical' })} className="w-full flex items-center justify-between p-4 border-b border-outline-variant/10 hover:bg-surface-container transition-colors active:scale-[0.99]">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-[#316342] rounded-lg flex items-center justify-center">
+                <div className="w-4 h-4 bg-white rounded-full" />
+              </div>
+              <span className="font-bold text-on-surface">ボタニカル</span>
+            </div>
+            {settings.colorTheme === 'botanical' && <div className="w-3 h-3 rounded-full bg-primary-container animate-in zoom-in duration-200" />}
           </button>
-          <button onClick={() => onUpdateSettings({ theme: 'system' })} className="w-full flex items-center justify-between p-4 hover:bg-surface-container transition-colors active:scale-[0.99]">
-            <div className="flex items-center gap-3"><div className="w-8 h-8 bg-surface-container rounded-lg flex items-center justify-center"><Smartphone size={18} className="text-secondary" /></div><span className="font-bold text-on-surface">端末の設定に従う</span></div>
-            {settings.theme === 'system' && <div className="w-3 h-3 rounded-full bg-primary-container animate-in zoom-in duration-200" />}
+          <button onClick={() => onUpdateSettings({ colorTheme: 'midnight' })} className="w-full flex items-center justify-between p-4 hover:bg-surface-container transition-colors active:scale-[0.99]">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-slate-900 rounded-lg flex items-center justify-center">
+                <div className="w-4 h-4 bg-white rounded-full" />
+              </div>
+              <span className="font-bold text-on-surface">ミッドナイト</span>
+            </div>
+            {settings.colorTheme === 'midnight' && <div className="w-3 h-3 rounded-full bg-primary-container animate-in zoom-in duration-200" />}
           </button>
         </div>
       </section>
@@ -1934,7 +1793,7 @@ export default function HomePage() {
   const { user, loading: authLoading } = useAuth();
   const { templates, items, loading: dataLoading, settings: firestoreSettings, saveTemplate, deleteTemplate, saveItem, deleteItem, updateQuantity, reorderItems, reorderTemplates, deleteAllData, saveSettings, saveFcmToken, deleteFcmToken } = useData(user?.uid ?? null);
 
-  const DEFAULT_SETTINGS: Settings = { theme: 'system', notificationDaysBefore: 7, notificationHour: 9 };
+  const DEFAULT_SETTINGS: Settings = { colorTheme: 'amber', notificationDaysBefore: 7, notificationHour: 9 };
   const [localSettings, setLocalSettings] = useState<Settings>(() => {
     if (typeof window === 'undefined') return DEFAULT_SETTINGS;
     const saved = localStorage.getItem('tresor-settings');
@@ -1963,19 +1822,10 @@ export default function HomePage() {
     }
   }, [dataLoading, templates.length, user]);
 
-  // Apply theme
+  // Apply color theme
   useEffect(() => {
-    const apply = (dark: boolean) => { setIsDark(dark); document.documentElement.classList.toggle('dark', dark); };
-    if (settings.theme === 'dark') { apply(true); }
-    else if (settings.theme === 'light') { apply(false); }
-    else {
-      const mq = window.matchMedia('(prefers-color-scheme: dark)');
-      apply(mq.matches);
-      const handler = (e: MediaQueryListEvent) => apply(e.matches);
-      mq.addEventListener('change', handler);
-      return () => mq.removeEventListener('change', handler);
-    }
-  }, [settings.theme]);
+    document.documentElement.setAttribute('data-theme', settings.colorTheme);
+  }, [settings.colorTheme]);
 
   const updateSettings = (partial: Partial<Settings>) => {
     const next = { ...settings, ...partial };
@@ -2235,7 +2085,6 @@ export default function HomePage() {
         <PresetSelectionModal
           onSelect={handleSelectPreset}
           onClose={() => setShowPresets(false)}
-          isDark={isDark}
         />
       )}
     </div>

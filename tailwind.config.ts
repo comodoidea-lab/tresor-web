@@ -1,7 +1,7 @@
 import type { Config } from 'tailwindcss'
 
 const config: Config = {
-  darkMode: 'class',
+  darkMode: ['class', '[data-theme="midnight"]'],
   content: [
     './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
     './src/components/**/*.{js,ts,jsx,tsx,mdx}',
@@ -10,56 +10,56 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Material Design 3 Tonal Palette
+        // CSS Variable based colors for theming
         surface: {
-          DEFAULT: '#f8f9fa',
-          dim: '#d9dadb',
-          bright: '#f8f9fa',
+          DEFAULT: 'var(--surface)',
+          dim: 'var(--surface-dim)',
+          bright: 'var(--surface-bright)',
         },
         'surface-container': {
-          DEFAULT: '#edeeef',
-          low: '#f3f4f5',
-          lowest: '#ffffff',
-          high: '#e7e8e9',
-          highest: '#e1e3e4',
+          DEFAULT: 'var(--surface-container)',
+          low: 'var(--surface-container-low)',
+          lowest: 'var(--surface-container-lowest)',
+          high: 'var(--surface-container-high)',
+          highest: 'var(--surface-container-highest)',
         },
         'on-surface': {
-          DEFAULT: '#191c1d',
-          variant: '#534434',
+          DEFAULT: 'var(--on-surface)',
+          variant: 'var(--on-surface-variant)',
         },
         primary: {
-          DEFAULT: '#865300',
-          container: '#f59d0a',
-          fixed: '#ffddb8',
-          'fixed-dim': '#ffb960',
+          DEFAULT: 'var(--primary)',
+          container: 'var(--primary-container)',
+          fixed: 'var(--primary-fixed)',
+          'fixed-dim': 'var(--primary-fixed-dim)',
         },
         'on-primary': {
-          DEFAULT: '#ffffff',
-          container: '#613b00',
-          fixed: '#2b1700',
+          DEFAULT: 'var(--on-primary)',
+          container: 'var(--on-primary-container)',
+          fixed: 'var(--on-primary-fixed)',
         },
         secondary: {
-          DEFAULT: '#333333',
-          container: '#e4e2e1',
-          fixed: '#e4e2e1',
-          'fixed-dim': '#c8c6c6',
+          DEFAULT: 'var(--secondary)',
+          container: 'var(--secondary-container)',
+          fixed: 'var(--secondary-fixed)',
+          'fixed-dim': 'var(--secondary-fixed-dim)',
         },
         'on-secondary': {
-          DEFAULT: '#ffffff',
-          container: '#656464',
-          fixed: '#1b1c1c',
+          DEFAULT: 'var(--on-secondary)',
+          container: 'var(--on-secondary-container)',
+          fixed: 'var(--on-secondary-fixed)',
         },
         outline: {
-          DEFAULT: '#867461',
-          variant: '#d9c3ad',
+          DEFAULT: 'var(--outline)',
+          variant: 'var(--outline-variant)',
         },
         error: {
-          DEFAULT: '#ba1a1a',
-          container: '#ffdad6',
+          DEFAULT: 'var(--error)',
+          container: 'var(--error-container)',
         },
         'on-error': {
-          DEFAULT: '#ffffff',
-          container: '#93000a',
+          DEFAULT: 'var(--on-error)',
+          container: 'var(--on-error-container)',
         },
         // Legacy amber for compatibility
         amber: {

@@ -14,8 +14,12 @@ export const metadata: Metadata = {
     telephone: false,
   },
   icons: {
-    icon: { url: '/favicon.svg', type: 'image/svg+xml' },
-    shortcut: '/favicon.svg',
+    icon: [
+      { url: '/favicon-16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/favicon-32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+    ],
+    shortcut: '/favicon-32.png',
     apple: [{ url: '/apple-touch-icon.png', sizes: '180x180' }],
   },
 };
@@ -36,6 +40,8 @@ export default function RootLayout({
   return (
     <html lang="ja">
       <head>
+        <link rel="icon" href="/favicon-16.png" sizes="16x16" type="image/png" />
+        <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png" />
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
         <meta name="mobile-web-app-capable" content="yes" />
