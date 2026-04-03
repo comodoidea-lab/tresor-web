@@ -22,7 +22,7 @@ export interface Item {
 }
 
 export interface Settings {
-  theme: 'light' | 'dark' | 'system';
+  colorTheme: 'amber' | 'botanical' | 'midnight';
   notificationDaysBefore: number;
   notificationHour: number;
 }

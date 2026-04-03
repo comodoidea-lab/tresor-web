@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+
+<html class="light" lang="ja"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface": "#f8f9fa",
+                        "primary-fixed-dim": "#ffb960",
+                        "error-container": "#ffdad6",
+                        "surface-container-low": "#f3f4f5",
+                        "tertiary-container": "#ff9283",
+                        "surface-tint": "#865300",
+                        "tertiary-fixed-dim": "#ffb4a9",
+                        "surface-variant": "#e1e3e4",
+                        "on-secondary-fixed": "#1b1c1c",
+                        "surface-container-highest": "#e1e3e4",
+                        "surface-dim": "#d9dadb",
+                        "error": "#ba1a1a",
+                        "on-error-container": "#93000a",
+                        "secondary-fixed": "#e4e2e1",
+                        "on-error": "#ffffff",
+                        "on-secondary-container": "#656464",
+                        "tertiary-fixed": "#ffdad5",
+                        "on-secondary": "#ffffff",
+                        "on-primary-fixed-variant": "#653e00",
+                        "on-surface": "#191c1d",
+                        "outline": "#867461",
+                        "on-tertiary-container": "#8c0304",
+                        "on-primary": "#ffffff",
+                        "secondary": "#333333",
+                        "on-secondary-fixed-variant": "#474747",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "primary-container": "#f59d0a",
+                        "primary-fixed": "#ffddb8",
+                        "on-background": "#191c1d",
+                        "on-primary-fixed": "#2b1700",
+                        "on-surface-variant": "#534434",
+                        "outline-variant": "#d9c3ad",
+                        "inverse-on-surface": "#f0f1f2",
+                        "inverse-surface": "#2e3132",
+                        "secondary-container": "#e4e2e1",
+                        "on-tertiary-fixed": "#410000",
+                        "background": "#f8f9fa",
+                        "surface-container": "#edeeef",
+                        "secondary-fixed-dim": "#c8c6c6",
+                        "tertiary": "#b4271d",
+                        "on-tertiary-fixed-variant": "#910807",
+                        "inverse-primary": "#ffb960",
+                        "surface-container-high": "#e7e8e9",
+                        "surface-bright": "#f8f9fa",
+                        "on-primary-container": "#613b00",
+                        "primary": "#865300"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Plus Jakarta Sans"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3 { font-family: 'Plus Jakarta Sans', sans-serif; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body">
+<!-- SideNavBar Implementation -->
+<nav class="h-screen w-64 fixed left-0 top-0 bg-[#333333] dark:bg-slate-950 flex flex-col h-full py-6 z-50">
+<div class="px-6 mb-10">
+<h1 class="text-xl font-bold text-white tracking-tight">在庫アーカイブ</h1>
+<p class="text-xs text-gray-400 mt-1">プレミアム管理システム</p>
+</div>
+<div class="flex-1 flex flex-col gap-1">
+<a class="flex items-center gap-3 px-6 py-3 text-gray-400 hover:text-white transition-colors hover:bg-white/10 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-['Plus_Jakarta_Sans'] font-medium text-sm">ダッシュボード</span>
+</a>
+<a class="flex items-center gap-3 px-6 py-3 text-[#f59d0a] font-bold border-r-4 border-[#f59d0a] bg-white/5 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="inventory_2">inventory_2</span>
+<span class="font-['Plus_Jakarta_Sans'] font-medium text-sm">在庫管理</span>
+</a>
+<a class="flex items-center gap-3 px-6 py-3 text-gray-400 hover:text-white transition-colors hover:bg-white/10 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="add_circle">add_circle</span>
+<span class="font-['Plus_Jakarta_Sans'] font-medium text-sm">新規登録</span>
+</a>
+<a class="flex items-center gap-3 px-6 py-3 text-gray-400 hover:text-white transition-colors hover:bg-white/10 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+<span class="font-['Plus_Jakarta_Sans'] font-medium text-sm">レポート</span>
+</a>
+<a class="flex items-center gap-3 px-6 py-3 text-gray-400 hover:text-white transition-colors hover:bg-white/10 transition-all duration-200 mt-auto" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-['Plus_Jakarta_Sans'] font-medium text-sm">設定</span>
+</a>
+</div>
+<div class="px-6 pt-6 mt-6 border-t border-white/10 flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-surface-container-highest overflow-hidden">
+<img alt="ユーザーアバター" class="w-full h-full object-cover" data-alt="close-up portrait of a professional manager with a clean workspace background, soft lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBhCmQrvGuKZcyQ3FSwsV1xqr567prfUWFIoBMzsQyiU8VvUkPzx-LSoCHi8H43mF0nfqlY1_HCIJ8Uc4kgZLbihO8vHcaw1IBHGB1IyoNFIdgcRIF6xkgdJDfylERBNbmJi_urgCbDD8lpyhBqqs0PUbfOoh4cDm0l4gb4ivM0fxd9jgpS2Buf7oQH2DFMYLp2c22yrPfW8dwDnFagydaUsKhcsu5NPPfYOR5ftMzO3UMQZgS0eXydLte2jh462U5blzjsSQWiuP-0"/>
+</div>
+<div class="overflow-hidden">
+<p class="text-white text-sm font-bold truncate">Tresor Admin</p>
+<p class="text-gray-500 text-xs truncate">Manager Account</p>
+</div>
+</div>
+</nav>
+<!-- TopNavBar Implementation -->
+<header class="fixed top-0 right-0 w-[calc(100%-16rem)] h-16 bg-[#f8f9fa]/80 backdrop-blur-md flex justify-between items-center px-8 z-40">
+<div class="flex items-center bg-surface-container-low px-4 py-2 rounded-lg w-96 group focus-within:ring-2 focus-within:ring-primary/20 transition-all">
+<span class="material-symbols-outlined text-secondary mr-2" data-icon="search">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-sm w-full font-['Plus_Jakarta_Sans']" placeholder="SKU、製品名、またはカテゴリーで検索..." type="text"/>
+</div>
+<div class="flex items-center gap-6">
+<button class="relative text-on-surface hover:bg-gray-200/50 p-2 rounded-lg transition-opacity">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full"></span>
+</button>
+<button class="text-on-surface hover:bg-gray-200/50 p-2 rounded-lg transition-opacity">
+<span class="material-symbols-outlined" data-icon="help_outline">help_outline</span>
+</button>
+<div class="h-6 w-px bg-outline-variant/30"></div>
+<button class="text-primary font-bold text-sm px-4 py-2 hover:bg-primary/5 rounded-lg transition-colors">ログアウト</button>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="ml-64 pt-16 min-h-screen bg-surface">
+<div class="p-8 max-w-7xl mx-auto">
+<!-- Page Header -->
+<div class="flex justify-between items-end mb-8">
+<div>
+<h2 class="text-3xl font-extrabold tracking-tight text-on-surface mb-1">在庫一覧</h2>
+<p class="text-secondary/70 font-medium">全 <span class="text-primary">1,248</span> アイテムが登録されています</p>
+</div>
+<button class="flex items-center gap-2 bg-gradient-to-r from-primary to-primary-container text-white px-6 py-3 rounded-lg font-bold shadow-lg shadow-primary/20 scale-98 active:scale-95 transition-all">
+<span class="material-symbols-outlined" data-icon="add">add</span>
+                    新規登録
+                </button>
+</div>
+<!-- Advanced Filter Panel (Tonal Layering) -->
+<section class="bg-surface-container-low rounded-xl p-6 mb-8">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+<div class="space-y-2">
+<label class="text-xs font-bold text-secondary uppercase tracking-wider">カテゴリー</label>
+<select class="w-full bg-surface-container-lowest border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 py-3">
+<option>すべてのカテゴリー</option>
+<option>アンティーク</option>
+<option>ジュエリー</option>
+<option>アートワーク</option>
+<option>高級時計</option>
+</select>
+</div>
+<div class="space-y-2">
+<label class="text-xs font-bold text-secondary uppercase tracking-wider">保管場所</label>
+<select class="w-full bg-surface-container-lowest border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 py-3">
+<option>すべての倉庫</option>
+<option>メインアーカイブ (銀座)</option>
+<option>第2保管所 (日本橋)</option>
+<option>展示スペース</option>
+</select>
+</div>
+<div class="space-y-2">
+<label class="text-xs font-bold text-secondary uppercase tracking-wider">状態</label>
+<div class="flex gap-2">
+<button class="flex-1 bg-primary text-white text-xs font-bold py-3 rounded-lg">新品</button>
+<button class="flex-1 bg-surface-container-lowest text-secondary text-xs font-bold py-3 rounded-lg hover:bg-white transition-colors">中古</button>
+<button class="flex-1 bg-surface-container-lowest text-secondary text-xs font-bold py-3 rounded-lg hover:bg-white transition-colors">修理要</button>
+</div>
+</div>
+<div class="space-y-2">
+<label class="text-xs font-bold text-secondary uppercase tracking-wider">価格帯 (万円)</label>
+<div class="flex items-center gap-3 bg-surface-container-lowest rounded-lg px-4 py-2">
+<input class="w-full border-none bg-transparent p-1 text-sm focus:ring-0" placeholder="Min" type="number"/>
+<span class="text-outline-variant">~</span>
+<input class="w-full border-none bg-transparent p-1 text-sm focus:ring-0" placeholder="Max" type="number"/>
+</div>
+</div>
+</div>
+</section>
+<!-- Data Table (Asymmetric Layout / Tonal Lift) -->
+<div class="bg-surface-container-lowest rounded-xl overflow-hidden">
+<table class="w-full text-left border-collapse">
+<thead class="bg-surface-container-low">
+<tr>
+<th class="px-6 py-4 text-xs font-bold text-secondary/60 uppercase tracking-widest">アイテム情報</th>
+<th class="px-6 py-4 text-xs font-bold text-secondary/60 uppercase tracking-widest">SKU / ID</th>
+<th class="px-6 py-4 text-xs font-bold text-secondary/60 uppercase tracking-widest">保管場所</th>
+<th class="px-6 py-4 text-xs font-bold text-secondary/60 uppercase tracking-widest">コンディション</th>
+<th class="px-6 py-4 text-xs font-bold text-secondary/60 uppercase tracking-widest text-right">評価額</th>
+<th class="px-6 py-4"></th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container-low">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-low/30 transition-colors">
+<td class="px-6 py-5">
+<div class="flex items-center gap-4">
+<div class="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
+<img alt="製品画像" class="w-full h-full object-cover" data-alt="clean minimalist studio shot of a white luxury wrist watch on a soft beige background, elegant lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCAihzA4o4qRb7yKIfU7qIjyR8MSEn7SgdtKbd9Qy2Jc48ql8snPY56RQS5j5M5HkDhrix9fP8h3yf8dBltvU13VVvTW7mXE5hV4rH8YGRfADhSG9-Zjt4UENUxZFBmwcJid7MqcuauuvjVKpWZdNLK2W1dsUEqYVUJ4GnE8Degv5SYtZPRsaQrQFGXcTAnWMxZ8eItf109zolbri2Nm2XvVNOW15NPk1OjGuLgbauCBqVww7IXn2rGDe4zNhBNWAW8AqvTO_gllXHi"/>
+</div>
+<div>
+<p class="font-bold text-on-surface">Royal Chronometer 1954</p>
+<p class="text-xs text-secondary/60">カテゴリー: 高級時計</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-5">
+<code class="bg-surface-container-high px-2 py-1 rounded text-xs font-mono text-primary font-bold">TR-WH-2024-001</code>
+</td>
+<td class="px-6 py-5 text-sm font-medium">メインアーカイブ (銀座)</td>
+<td class="px-6 py-5">
+<span class="bg-primary-fixed-dim/20 text-primary-fixed-dim text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-tighter border border-primary-fixed-dim/30">Excellent</span>
+</td>
+<td class="px-6 py-5 text-right font-bold text-on-surface">¥1,250,000</td>
+<td class="px-6 py-5 text-right">
+<button class="text-secondary/40 hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container-low/30 transition-colors">
+<td class="px-6 py-5">
+<div class="flex items-center gap-4">
+<div class="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
+<img alt="製品画像" class="w-full h-full object-cover" data-alt="abstract expressionist oil painting with bold brushstrokes in gold and deep blue tones, artistic studio lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBUFfMFXdbZ1Qi23VEg1_4xCePr5oXCaV7-CXt-pisNWONKCtoM2w1r_zInsdvwVNRCHGXAI9MNckVZqBEWr2KUlG_aEXMB-aJhkDoVC4EZM9kQmhtacR1pJvUaKq0YdejfyTzXoJXV0CEPgYVZ0hjPpRU7zu9e9u5LliTOMW0NBplIb2dcNdZMDmsxVM0upSKJu_iWGElDTvjjyCsXR-EyesHsH35AP8FjZPpcq_56tO1Iqjlnsn6VH9ItVoUSGe2ec7Bqfa-44hW2"/>
+</div>
+<div>
+<p class="font-bold text-on-surface">Midnight Serenity Canvas</p>
+<p class="text-xs text-secondary/60">カテゴリー: アートワーク</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-5">
+<code class="bg-surface-container-high px-2 py-1 rounded text-xs font-mono text-primary font-bold">TR-ART-2023-892</code>
+</td>
+<td class="px-6 py-5 text-sm font-medium">展示スペース (A区画)</td>
+<td class="px-6 py-5">
+<span class="bg-tertiary-fixed-dim/20 text-tertiary text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-tighter border border-tertiary/30">Mint</span>
+</td>
+<td class="px-6 py-5 text-right font-bold text-on-surface">¥480,000</td>
+<td class="px-6 py-5 text-right">
+<button class="text-secondary/40 hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-low/30 transition-colors">
+<td class="px-6 py-5">
+<div class="flex items-center gap-4">
+<div class="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
+<img alt="製品画像" class="w-full h-full object-cover" data-alt="exquisite diamond necklace on a black velvet mannequin with focused spotlight highlighting the sparkles" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA2xKohzMWujA_hHGarIHDU3Vg8JHM4_vVjFGIalyAVDx91lpBu7kN-gBpNHYs_7dOlE7mFm3-uhMzy_pVh7Ngh4zYT7ZZ-k0nop-vM_8jMqi-nznyrtILYQYEZ-R02VGgUNwpsHkbll0mItiFwyd7xutnA-P8nyEUqmM1EoPbMHxBBDLcxVEZw0KP41exGDVlU_kkek4Mw6pPnzNomb3lRm4AcZFn9sBCg8iX88CXpmB5DcpkCqtlAGtqGIq6nLlPC1S52B9FTyy0f"/>
+</div>
+<div>
+<p class="font-bold text-on-surface">Diamond Pendant "Éclat"</p>
+<p class="text-xs text-secondary/60">カテゴリー: ジュエリー</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-5">
+<code class="bg-surface-container-high px-2 py-1 rounded text-xs font-mono text-primary font-bold">TR-JW-2024-042</code>
+</td>
+<td class="px-6 py-5 text-sm font-medium">第2保管所 (日本橋)</td>
+<td class="px-6 py-5">
+<span class="bg-primary-fixed-dim/20 text-primary-fixed-dim text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-tighter border border-primary-fixed-dim/30">Pristine</span>
+</td>
+<td class="px-6 py-5 text-right font-bold text-on-surface">¥3,100,000</td>
+<td class="px-6 py-5 text-right">
+<button class="text-secondary/40 hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-surface-container-low/30 transition-colors">
+<td class="px-6 py-5">
+<div class="flex items-center gap-4">
+<div class="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
+<img alt="製品画像" class="w-full h-full object-cover" data-alt="vintage leather upholstered wooden armchair in a library setting with warm ambient lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC4gg0NgjY34cGvLAJE1yNa3YQgiUlurQGkiH1EnnosLk3OridpZSeHv_o5rwCpLuwjp1ZVkWFhLNUPHc_6yvHoCyQtaaeQMFvtnrMBugot7fVcH1NotQojZE1DN1WM1gq0edFF7_GZPvMW1emtR0eXXKKKaQ5rIBuhBSP0oXkzC3qix16Xcx40WVXCGdjxHrqA4oPa34Y7_7saf3lY7x9dp3wpM99oML-IaE_EwF7s5ky_aPfNpoNhKg3Hr-B1T7jdtURTkNPpPRsO"/>
+</div>
+<div>
+<p class="font-bold text-on-surface">Victorian Reading Chair</p>
+<p class="text-xs text-secondary/60">カテゴリー: 家具/アンティーク</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-5">
+<code class="bg-surface-container-high px-2 py-1 rounded text-xs font-mono text-primary font-bold">TR-ANT-2022-105</code>
+</td>
+<td class="px-6 py-5 text-sm font-medium">メインアーカイブ (銀座)</td>
+<td class="px-6 py-5">
+<span class="bg-surface-container-highest text-secondary/70 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-tighter border border-outline-variant/30">Good Condition</span>
+</td>
+<td class="px-6 py-5 text-right font-bold text-on-surface">¥185,000</td>
+<td class="px-6 py-5 text-right">
+<button class="text-secondary/40 hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination (Floating Container) -->
+<div class="mt-8 flex justify-between items-center bg-surface-container-lowest px-6 py-4 rounded-xl">
+<p class="text-sm text-secondary/60 font-medium">
+                    1 - 25 / 1,248 アイテムを表示中
+                </p>
+<div class="flex items-center gap-1">
+<button class="w-10 h-10 flex items-center justify-center rounded-lg text-secondary/40 hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined" data-icon="chevron_left">chevron_left</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-lg bg-primary text-white font-bold text-sm">1</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-lg text-secondary hover:bg-surface-container-low font-bold text-sm transition-colors">2</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-lg text-secondary hover:bg-surface-container-low font-bold text-sm transition-colors">3</button>
+<span class="px-2 text-secondary/30">...</span>
+<button class="w-10 h-10 flex items-center justify-center rounded-lg text-secondary hover:bg-surface-container-low font-bold text-sm transition-colors">50</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-lg text-secondary/40 hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined" data-icon="chevron_right">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+</body></html>
