@@ -81,7 +81,7 @@ export function useData(userId: string | null) {
 
   const saveTemplate = async (template: Template) => {
     if (!userId) return;
-    const data = { ...template, sortOrder: template.sortOrder ?? templates.length };
+    const data = { ...template, sortOrder: template.sortOrder ?? -Date.now() };
     const ref = doc(db, 'users', userId, 'templates', template.id);
     await setDoc(ref, data);
   };
@@ -102,7 +102,7 @@ export function useData(userId: string | null) {
 
   const saveItem = async (item: Item) => {
     if (!userId) return;
-    const data = { ...item, sortOrder: item.sortOrder ?? items.length };
+    const data = { ...item, sortOrder: item.sortOrder ?? -Date.now() };
     const ref = doc(db, 'users', userId, 'items', item.id);
     await setDoc(ref, data);
   };

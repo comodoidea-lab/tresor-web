@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+
+<html class="light" lang="ja"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;family=Inter:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary": "#f59d0a",
+                        "on-surface": "#333333",
+                        "tertiary-fixed": "#6ffbbe",
+                        "on-primary-fixed": "#00174a",
+                        "secondary-fixed": "#d5e3fc",
+                        "tertiary-container": "#002f1e",
+                        "secondary-fixed-dim": "#b9c7df",
+                        "surface-dim": "#d6dade",
+                        "outline": "#757682",
+                        "surface-container": "#eaeef2",
+                        "on-secondary-fixed-variant": "#3a485b",
+                        "on-error": "#ffffff",
+                        "on-tertiary-fixed": "#002113",
+                        "surface-tint": "#f59d0a",
+                        "on-secondary": "#ffffff",
+                        "secondary": "#515f74",
+                        "error": "#e74c3c",
+                        "inverse-on-surface": "#edf1f5",
+                        "surface-bright": "#f6fafe",
+                        "on-primary-container": "#f59d0a",
+                        "surface-variant": "#dfe3e7",
+                        "surface-container-low": "#f0f4f8",
+                        "surface-container-highest": "#dfe3e7",
+                        "surface-container-lowest": "#ffffff",
+                        "primary-fixed": "#ffedcc",
+                        "on-tertiary-fixed-variant": "#005236",
+                        "inverse-surface": "#2c3134",
+                        "on-primary-fixed-variant": "#945d00",
+                        "tertiary-fixed-dim": "#4edea3",
+                        "surface-container-high": "#e4e9ed",
+                        "error-container": "#ffdad6",
+                        "on-secondary-fixed": "#0d1c2e",
+                        "on-tertiary-container": "#00a371",
+                        "on-primary": "#ffffff",
+                        "surface": "#f6fafe",
+                        "primary-fixed-dim": "#ffcb6b",
+                        "secondary-container": "#d5e3fc",
+                        "tertiary": "#00180d",
+                        "on-background": "#333333",
+                        "on-secondary-container": "#57657a",
+                        "on-surface-variant": "#555555",
+                        "outline-variant": "#c5c6d2",
+                        "inverse-primary": "#ffcb6b",
+                        "on-error-container": "#93000a",
+                        "background": "#f6fafe",
+                        "on-tertiary": "#ffffff",
+                        "primary-container": "#333333"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Manrope"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Inter', 'Noto Sans JP', sans-serif;
+            background-color: #f6fafe;
+            color: #333333;
+        }
+        h1, h2, h3 {
+            font-family: 'Manrope', sans-serif;
+        }
+    </style>
+<style>
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface">
+<!-- TopAppBar -->
+<header class="bg-stone-50/80 dark:bg-stone-900/80 backdrop-blur-xl flex justify-between items-center px-6 py-4 w-full fixed top-0 z-50">
+<div class="flex items-center gap-4">
+<button class="p-2 text-stone-600 dark:text-stone-400 hover:bg-stone-200/50 dark:hover:bg-stone-800/50 transition-colors rounded-lg active:scale-95 duration-200">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<h1 class="text-2xl font-black text-amber-600 dark:text-amber-500 tracking-tighter">Tresor</h1>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-2 text-stone-600 dark:text-stone-400 hover:bg-stone-200/50 dark:hover:bg-stone-800/50 transition-colors rounded-lg active:scale-95 duration-200">
+<span class="material-symbols-outlined">search</span>
+</button>
+</div>
+</header>
+<main class="max-w-7xl mx-auto px-6 py-8 pb-32 mt-16">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+<!-- Left Column: Gallery & Primary Info -->
+<div class="lg:col-span-7 space-y-8">
+<!-- Gallery Section -->
+<section class="bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm">
+<div class="aspect-[16/9] relative group">
+<img alt="ライカカメラのスタジオ写真" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCmzya90FjoWPpjlzxQhcPwfySVqpbhBYuNEMYMnz61cb_tgxmge5pRiQYSkicKTZ_HueRiaqhHHl_j5mYn9YeIEkabd8PsDLYkHUPLB1YhCw6H4CxL1maESMIKHfWiITxzKmWNa1VRhMFRP_977MapUvxlZcJne3RbDB2sB1xl208oEn5M-lKvprLrGRrjHfagN-iY4ACSbFgsoAX5ZjsfvoCExhQuCKyPdqdRLCdlUkuRdoBi-3zEKHEUcsFxz2Bty_1HnmQVLASB"/>
+<div class="absolute bottom-4 right-4 bg-primary/80 backdrop-blur-md text-white px-3 py-1.5 rounded-lg flex items-center gap-2 text-sm font-medium">
+<span class="material-symbols-outlined text-sm">photo_library</span>
+                            1/4
+                        </div>
+</div>
+<div class="p-4 grid grid-cols-4 gap-4">
+<div class="aspect-square bg-surface-container-low rounded-lg overflow-hidden border-2 border-primary cursor-pointer">
+<img alt="レンズの詳細" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDZ-tdNHhfsjuHyjKa2ioOe6KgjKJs81vZwifc42qRdhiWhqhwO-tgtgeHhVcXD2WklOaOcMi2kQ1l_GA7xL3V8OKRUoIWDHxz5yMYXJoFo_w8zmD1tmCFfWLtMVEvyDIEA07uXOUj7Xv13NFdELUI4YP83xGHqmTrWLfNTfykK8wyBcgTJSqBRch8m91Cz22FWtai_z1tfKdU2YqI6M9kOzIRbbCxheR4hhcl7YPvOPIqD3NmAtSE-fZHH2wgEdAUfZcYDyjyq9lGB"/>
+</div>
+<div class="aspect-square bg-surface-container-low rounded-lg overflow-hidden opacity-60 hover:opacity-100 transition-opacity cursor-pointer">
+<img alt="カメラの背面" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBteKY_zFuScv0arOddKofo6YOg5ByQ7_rBvaaieFlVgm1h67838mEjkrBvCD2IVh9FqyK2OlENCqL0l_lZEh1sz7OFQSd4gI0LXJdMvsCl36BK9gOOnBz6iaxCTk3iNXZPWIBN6g9vdMkFJ8rbdhOHAiq476qrJeQsz8Ed0dMUVbqWmaPFgbwdRkJzSTHnia_hHuETqlVcVPe_stK16ULvuONiNYspRT_i_yjgwk2CcvDBkWdc2srAJASHSVV5ZeAg_7LIM5vQ5Q1K"/>
+</div>
+<div class="aspect-square bg-surface-container-low rounded-lg overflow-hidden opacity-60 hover:opacity-100 transition-opacity cursor-pointer">
+<img alt="カメラのプロファイル" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBlB4Pej7z7qQJsp044mzqbtZljgkww2H-royY0g2s-Ipn26gApV_OlX9MG5U798FHIYDrGdZZ9WYdZb2yRxy7BF_kBSoX-g-1J54SL9qO9foeouuWl__0P2EK1S0ELdq15320xZT3Dhj89PBGL66DursswuHGyQAZHi75N-EVCuvQza4OC1xe6mNr3fCmqxo9ONUnQV95iBFZNZWjsKQjm1Jv5vxVijluE5H8sVBsorn6FL3pXXRtRcGmJNHj9StzIDt4wNKfTfoWP"/>
+</div>
+<div class="aspect-square bg-surface-container-low rounded-lg overflow-hidden opacity-60 hover:opacity-100 transition-opacity flex items-center justify-center bg-surface-container-high cursor-pointer">
+<span class="material-symbols-outlined text-outline">add_a_photo</span>
+</div>
+</div>
+</section>
+<!-- Asset Header & Actions -->
+<section class="bg-surface-container-low p-8 rounded-xl space-y-6">
+<div class="flex justify-between items-start">
+<div>
+<span class="text-xs font-bold tracking-widest text-outline uppercase font-label">資産 ID: TR-9822-LC</span>
+<h2 class="text-3xl font-extrabold text-on-surface mt-1 tracking-tight">ライカ M6 クラシック 'パンダ'</h2>
+<p class="text-on-surface-variant mt-2 max-w-lg">クロームパーツとブラックボディを組み合わせた1992年の希少モデル。アーカイブコレクションとして管理されています。</p>
+</div>
+<div class="bg-tertiary-fixed text-on-tertiary-fixed-variant px-3 py-1 rounded-lg text-xs font-bold flex items-center gap-1.5 whitespace-nowrap">
+<span class="material-symbols-outlined text-xs" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                            在庫あり
+                        </div>
+</div>
+<div class="flex flex-wrap gap-3 pt-4">
+<button class="bg-primary text-white px-6 py-2.5 rounded-lg font-bold flex items-center gap-2 active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-xl">edit</span>
+                            編集
+                        </button>
+<button class="bg-surface-container-highest text-on-surface px-6 py-2.5 rounded-lg font-bold flex items-center gap-2 active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-xl">move_item</span>
+                            移動
+                        </button>
+<button class="bg-surface-container-highest text-error px-6 py-2.5 rounded-lg font-bold flex items-center gap-2 active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-xl">report</span>
+                            問題を報告
+                        </button>
+</div>
+</section>
+<!-- Activity History -->
+<section class="space-y-4">
+<h3 class="text-xl font-bold text-on-surface px-2">アクティビティ履歴</h3>
+<div class="bg-surface-container-low rounded-xl overflow-hidden">
+<div class="p-6 space-y-6">
+<div class="flex gap-4">
+<div class="flex flex-col items-center">
+<div class="w-3 h-3 rounded-full bg-primary mt-1.5"></div>
+<div class="w-px h-full bg-outline-variant/30 mt-2"></div>
+</div>
+<div class="pb-2">
+<p class="font-bold text-on-surface">コンディション確認済</p>
+<p class="text-sm text-on-surface-variant">管理者 Sarah により <span class="text-primary font-semibold">新品同様</span> に更新</p>
+<span class="text-[10px] uppercase tracking-wider text-outline font-label mt-1 block">2023年10月24日 • 14:20</span>
+</div>
+</div>
+<div class="flex gap-4">
+<div class="flex flex-col items-center">
+<div class="w-3 h-3 rounded-full bg-outline-variant mt-1.5"></div>
+<div class="w-px h-full bg-outline-variant/30 mt-2"></div>
+</div>
+<div class="pb-2">
+<p class="font-bold text-on-surface">資産移動</p>
+<p class="text-sm text-on-surface-variant"><span class="font-medium">金庫 B</span> から <span class="font-medium">倉庫 A、3番通路</span> へ移動</p>
+<span class="text-[10px] uppercase tracking-wider text-outline font-label mt-1 block">2023年9月12日 • 09:15</span>
+</div>
+</div>
+<div class="flex gap-4">
+<div class="flex flex-col items-center">
+<div class="w-3 h-3 rounded-full bg-outline-variant mt-1.5"></div>
+</div>
+<div class="pb-2">
+<p class="font-bold text-on-surface">資産登録</p>
+<p class="text-sm text-on-surface-variant">学芸員による初期カタログ登録完了</p>
+<span class="text-[10px] uppercase tracking-wider text-outline font-label mt-1 block">2023年8月5日 • 11:45</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- Right Column: Metadata & Documents -->
+<div class="lg:col-span-5 space-y-8">
+<!-- Specifications Card -->
+<section class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/15 shadow-sm">
+<h3 class="text-lg font-bold text-on-surface mb-6">仕様</h3>
+<div class="space-y-6">
+<div class="flex justify-between items-center group">
+<div class="flex items-center gap-3">
+<div class="p-2 bg-surface-container-low rounded-lg text-primary">
+<span class="material-symbols-outlined">category</span>
+</div>
+<span class="text-on-surface-variant font-medium">カテゴリー</span>
+</div>
+<span class="font-bold text-on-surface">光学機器 &amp; ヘリテージ</span>
+</div>
+<div class="flex justify-between items-center group">
+<div class="flex items-center gap-3">
+<div class="p-2 bg-surface-container-low rounded-lg text-primary">
+<span class="material-symbols-outlined">location_on</span>
+</div>
+<span class="text-on-surface-variant font-medium">保管場所</span>
+</div>
+<div class="text-right">
+<span class="font-bold text-on-surface block">倉庫 A</span>
+<span class="text-xs text-outline font-label uppercase tracking-tighter">3番通路 • 棚12</span>
+</div>
+</div>
+<div class="flex justify-between items-center group">
+<div class="flex items-center gap-3">
+<div class="p-2 bg-surface-container-low rounded-lg text-primary">
+<span class="material-symbols-outlined">history_edu</span>
+</div>
+<span class="text-on-surface-variant font-medium">状態</span>
+</div>
+<div class="bg-secondary-fixed text-on-secondary-fixed-variant px-3 py-1 rounded-lg text-xs font-bold uppercase">
+                                新品同様
+                            </div>
+</div>
+<div class="flex justify-between items-center group">
+<div class="flex items-center gap-3">
+<div class="p-2 bg-surface-container-low rounded-lg text-primary">
+<span class="material-symbols-outlined">payments</span>
+</div>
+<span class="text-on-surface-variant font-medium">評価額</span>
+</div>
+<span class="font-bold text-on-surface">¥720,000</span>
+</div>
+</div>
+</section>
+<!-- Documents Section -->
+<section class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/15 shadow-sm">
+<div class="flex justify-between items-center mb-6">
+<h3 class="text-lg font-bold text-on-surface">添付ファイル</h3>
+<button class="text-primary text-xs font-bold flex items-center gap-1 hover:underline">
+<span class="material-symbols-outlined text-sm">add</span>
+                            新規追加
+                        </button>
+</div>
+<div class="space-y-3">
+<div class="flex items-center gap-3 p-3 bg-surface-container-low rounded-lg hover:bg-surface-container-high transition-colors cursor-pointer group">
+<div class="p-2 bg-white rounded-lg text-primary group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined">description</span>
+</div>
+<div class="flex-1 overflow-hidden">
+<p class="text-sm font-bold text-on-surface truncate">Certificate_of_Auth.pdf</p>
+<p class="text-[10px] text-outline font-label uppercase">1.2 MB • PDF DOCUMENT</p>
+</div>
+<span class="material-symbols-outlined text-outline">download</span>
+</div>
+<div class="flex items-center gap-3 p-3 bg-surface-container-low rounded-lg hover:bg-surface-container-high transition-colors cursor-pointer group">
+<div class="p-2 bg-white rounded-lg text-primary group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined">image</span>
+</div>
+<div class="flex-1 overflow-hidden">
+<p class="text-sm font-bold text-on-surface truncate">Original_Receipt_1992.jpg</p>
+<p class="text-[10px] text-outline font-label uppercase">4.5 MB • IMAGE</p>
+</div>
+<span class="material-symbols-outlined text-outline">download</span>
+</div>
+</div>
+</section>
+<!-- Private Notes -->
+<section class="bg-[#333333] p-6 rounded-xl text-white shadow-xl">
+<div class="flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined text-primary">sticky_note_2</span>
+<h3 class="text-lg font-bold">内部メモ</h3>
+</div>
+<p class="text-white/80 text-sm italic leading-relaxed">
+                        「第3四半期監査中に確認。レンズに埃なし。湿度管理されたキャビネットに保管。保護カバーが紛失しているため、汎用のシルクラップで代用。」
+                    </p>
+<div class="mt-6 pt-4 border-t border-white/10 flex justify-between items-center">
+<span class="text-[10px] font-label uppercase tracking-widest text-white/60">3日前に更新</span>
+<button class="text-xs font-bold text-primary">メモを編集</button>
+</div>
+</section>
+</div>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-2 bg-stone-50/80 dark:bg-stone-900/80 backdrop-blur-xl shadow-[0_-4px_24px_rgba(0,0,0,0.04)] rounded-t-2xl">
+<a class="flex flex-col items-center justify-center text-stone-500 dark:text-stone-400 px-3 py-1 hover:text-amber-500 transition-all active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-[10px] font-medium font-sans mt-1">ダッシュボード</span>
+</a>
+<a class="flex flex-col items-center justify-center text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 rounded-xl px-3 py-1 hover:text-amber-500 transition-all active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">inventory_2</span>
+<span class="text-[10px] font-medium font-sans mt-1">在庫一覧</span>
+</a>
+<a class="flex flex-col items-center justify-center text-stone-500 dark:text-stone-400 px-3 py-1 hover:text-amber-500 transition-all active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined">add_box</span>
+<span class="text-[10px] font-medium font-sans mt-1">新規登録</span>
+</a>
+<a class="flex flex-col items-center justify-center text-stone-500 dark:text-stone-400 px-3 py-1 hover:text-amber-500 transition-all active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-[10px] font-medium font-sans mt-1">設定</span>
+</a>
+</nav>
+</body></html>
