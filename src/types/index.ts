@@ -16,6 +16,8 @@ export interface Item {
   subLocation: string;
   attributes: Record<string, string>;
   note?: string;
+  /** カード左端アクセント用（#RRGGBB）。未設定はテーマ既定の見た目 */
+  cardColor?: string;
   createdAt: number;
   updatedAt: number;
   sortOrder?: number;
