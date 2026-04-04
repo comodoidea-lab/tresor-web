@@ -48,11 +48,27 @@ import {
   CheckSquare,
   Square,
   GripVertical,
+  Palette,
 } from 'lucide-react';
 
 // ============================================================
 // UTILITY FUNCTIONS
 // ============================================================
+
+function isValidHexColor(s: string | undefined): s is string {
+  return !!s && /^#[0-9A-Fa-f]{6}$/.test(s);
+}
+
+function CardColorAccent({ color }: { color?: string }) {
+  if (!isValidHexColor(color)) return null;
+  return (
+    <div
+      className="absolute left-0 top-0 bottom-0 w-1.5 rounded-l-2xl pointer-events-none z-10"
+      style={{ backgroundColor: color }}
+      aria-hidden
+    />
+  );
+}
 
 function generateId(): string {
   return Math.random().toString(36).slice(2) + Date.now().toString(36);
@@ -84,10 +100,10 @@ function formatDate(dateStr: string): string {
 }
 
 function exportToCSV(templates: Template[], items: Item[]) {
-  const header = ['id', 'templateId', 'templateName', 'name', 'quantity', 'subLocation', 'attributes', 'createdAt', 'updatedAt'];
+  const header = ['id', 'templateId', 'templateName', 'name', 'quantity', 'subLocation', 'cardColor', 'attributes', 'createdAt', 'updatedAt'];
   const rows = items.map((item) => {
     const tpl = templates.find((t) => t.id === item.templateId);
-    return [item.id, item.templateId, tpl?.name ?? '', item.name, item.quantity, item.subLocation, JSON.stringify(item.attributes), new Date(item.createdAt).toISOString(), new Date(item.updatedAt).toISOString()];
+    return [item.id, item.templateId, tpl?.name ?? '', item.name, item.quantity, item.subLocation, item.cardColor ?? '', JSON.stringify(item.attributes), new Date(item.createdAt).toISOString(), new Date(item.updatedAt).toISOString()];
   });
   const csv = [header, ...rows].map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
   const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
@@ -329,10 +345,21 @@ function ItemEditorModal({ item, templates, defaultTemplateId, onSave, onClose, 
   const [subLocation, setSubLocation] = useState(item?.subLocation ?? '');
   const [attributes, setAttributes] = useState<Record<string, string>>(item?.attributes ?? {});
   const [note, setNote] = useState(item?.note ?? '');
+  const [cardColor, setCardColor] = useState<string | undefined>(item?.cardColor);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
   const template = templates.find((t) => t.id === templateId);
+
+  useEffect(() => {
+    setName(item?.name ?? '');
+    setTemplateId(item?.templateId ?? defaultTemplateId ?? templates[0]?.id ?? '');
+    setQuantity(item?.quantity ?? 1);
+    setSubLocation(item?.subLocation ?? '');
+    setAttributes(item?.attributes ?? {});
+    setNote(item?.note ?? '');
+    setCardColor(item?.cardColor);
+  }, [item?.id, defaultTemplateId, templates]);
 
   useEffect(() => {
     if (!item && template && !subLocation) {
@@ -347,7 +374,8 @@ function ItemEditorModal({ item, templates, defaultTemplateId, onSave, onClose, 
     setError('');
     try {
       const now = Date.now();
-      await onSave({ id: item?.id ?? generateId(), templateId, name: name.trim(), quantity, subLocation, attributes, note: note.trim() || undefined, createdAt: item?.createdAt ?? now, updatedAt: now, sortOrder: item?.sortOrder });
+      const safeColor = cardColor && isValidHexColor(cardColor) ? cardColor : undefined;
+      await onSave({ id: item?.id ?? generateId(), templateId, name: name.trim(), quantity, subLocation, attributes, note: note.trim() || undefined, cardColor: safeColor, createdAt: item?.createdAt ?? now, updatedAt: now, sortOrder: item?.sortOrder });
     } catch (e) {
       setError('保存に失敗しました。もう一度お試しください。');
       console.error(e);
@@ -417,6 +445,43 @@ function ItemEditorModal({ item, templates, defaultTemplateId, onSave, onClose, 
               ))}
             </div>
           )}
+          <div>
+            <label className="text-xs font-bold text-secondary uppercase tracking-wide mb-2 flex items-center gap-2">
+              <Palette size={14} className="text-primary-container" />
+              カードの色
+            </label>
+            <p className="text-xs text-secondary/70 mb-3 leading-relaxed">ライブラリやダッシュボードのカード左端に表示されます。未設定のときはテーマの既定色です。</p>
+            <div className="flex flex-wrap items-center gap-3">
+              <input
+                type="color"
+                value={cardColor && isValidHexColor(cardColor) ? cardColor : '#f59e0b'}
+                onChange={(e) => setCardColor(e.target.value)}
+                className="h-11 w-16 cursor-pointer rounded-xl border-2 border-outline-variant/30 bg-surface-container p-0.5 shadow-inner"
+                title="色を選ぶ"
+              />
+              <div className="flex flex-wrap gap-2">
+                {['#ef4444', '#f97316', '#eab308', '#22c55e', '#14b8a6', '#3b82f6', '#8b5cf6', '#ec4899'].map((hex) => (
+                  <button
+                    key={hex}
+                    type="button"
+                    onClick={() => setCardColor(hex)}
+                    className={`h-8 w-8 rounded-lg border-2 transition-transform hover:scale-110 active:scale-95 ${cardColor === hex ? 'border-on-surface ring-2 ring-primary/40' : 'border-white/20'}`}
+                    style={{ backgroundColor: hex }}
+                    title={hex}
+                  />
+                ))}
+              </div>
+              {cardColor && (
+                <button
+                  type="button"
+                  onClick={() => setCardColor(undefined)}
+                  className="text-xs font-bold text-secondary hover:text-on-surface px-3 py-2 rounded-xl bg-surface-container border border-outline-variant/20"
+                >
+                  色をクリア
+                </button>
+              )}
+            </div>
+          </div>
           {/* Note field — always visible, multiline */}
           <div>
             <label className="text-xs font-bold text-secondary uppercase tracking-wide mb-2 block">ノート</label>
@@ -731,8 +796,9 @@ function DashboardTab({ templates, items, onAddItem, onShowTutorial, onGoToLibra
               <button
                 key={item.id}
                 onClick={() => onEditItem(item)}
-                className="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant/20 hover:border-primary-container/50 transition-colors text-left group"
+                className="relative overflow-hidden bg-surface-container-lowest p-4 rounded-xl border border-outline-variant/20 hover:border-primary-container/50 transition-colors text-left group"
               >
+                <CardColorAccent color={item.cardColor} />
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-error-container/30 rounded-xl flex items-center justify-center">
                     <Clock size={18} className="text-error" />
@@ -772,10 +838,28 @@ function DashboardTab({ templates, items, onAddItem, onShowTutorial, onGoToLibra
               <button
                 key={item.id}
                 onClick={() => onEditItem(item)}
-                className="bg-surface-container-lowest p-5 rounded-2xl border border-outline-variant/20 shadow-tonal hover:shadow-elevated hover:-translate-y-0.5 transition-all duration-200 text-left group"
+                className="relative overflow-hidden bg-surface-container-lowest p-5 rounded-2xl border border-outline-variant/20 shadow-tonal hover:shadow-elevated hover:-translate-y-0.5 transition-all duration-200 text-left group"
               >
-                <div className="w-12 h-12 bg-surface-container rounded-xl flex items-center justify-center mb-4 group-hover:bg-primary-container/10 transition-colors">
-                  <Box size={24} className="text-secondary/40 group-hover:text-primary-container transition-colors" />
+                <CardColorAccent color={item.cardColor} />
+                <div
+                  className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 transition-colors ${
+                    isValidHexColor(item.cardColor) ? '' : 'bg-surface-container group-hover:bg-primary-container/10'
+                  }`}
+                  style={
+                    isValidHexColor(item.cardColor)
+                      ? { backgroundColor: `${item.cardColor}2a` }
+                      : undefined
+                  }
+                >
+                  <Box
+                    size={24}
+                    className={
+                      isValidHexColor(item.cardColor)
+                        ? 'transition-colors'
+                        : 'text-secondary/40 group-hover:text-primary-container transition-colors'
+                    }
+                    style={isValidHexColor(item.cardColor) ? { color: item.cardColor } : undefined}
+                  />
                 </div>
                 <p className="font-bold text-on-surface text-sm line-clamp-2 mb-2">{item.name}</p>
                 <p className="text-xs font-bold text-secondary/50">{templates.find((t) => t.id === item.templateId)?.name || '未分類'}</p>
@@ -1103,7 +1187,7 @@ function LibraryTab({ templates, items, onEditItem, onDeleteItem, onQuantityChan
             >
               {/* Card */}
               <div
-                className={`bg-surface-container-lowest p-4 rounded-2xl shadow-tonal border cursor-pointer select-none transition-all
+                className={`relative overflow-hidden bg-surface-container-lowest p-4 rounded-2xl shadow-tonal border cursor-pointer select-none transition-all
                   ${isDragging ? 'border-primary-container scale-[1.02] z-50 shadow-elevated' : 'border-outline-variant/10 hover:shadow-elevated hover:-translate-y-0.5'}
                   ${deleteMode ? 'border-error/50 bg-error-container/10' : ''}
                   ${sortMode ? 'border-primary/40' : ''}
@@ -1116,12 +1200,23 @@ function LibraryTab({ templates, items, onEditItem, onDeleteItem, onQuantityChan
                   onEditItem(item);
                 }}
               >
+                <CardColorAccent color={item.cardColor} />
                 <div className="flex items-start gap-4">
                   <div
-                    className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 transition-all ${sortMode ? 'bg-primary-container/20 animate-pulse' : 'bg-surface-container'
-                      }`}
+                    className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 transition-all ${
+                      sortMode ? 'bg-primary-container/20 animate-pulse' : isValidHexColor(item.cardColor) ? '' : 'bg-surface-container'
+                    }`}
+                    style={
+                      !sortMode && isValidHexColor(item.cardColor)
+                        ? { backgroundColor: `${item.cardColor}33` }
+                        : undefined
+                    }
                   >
-                    <Box size={24} className={`transition-colors ${sortMode ? 'text-primary-container' : 'text-secondary/40'}`} />
+                    <Box
+                      size={24}
+                      className={`transition-colors ${sortMode ? 'text-primary-container' : isValidHexColor(item.cardColor) ? '' : 'text-secondary/40'}`}
+                      style={!sortMode && isValidHexColor(item.cardColor) ? { color: item.cardColor } : undefined}
+                    />
                   </div>
                   <div className="flex-1 min-w-0 py-1">
                     <p className="font-bold text-on-surface text-sm">{item.name}</p>
@@ -2064,6 +2159,7 @@ export default function HomePage() {
       {showTutorial && <TutorialModal onClose={closeTutorial} />}
       {showItemEditor && (
         <ItemEditorModal
+          key={editingItem?.id ?? 'new-item'}
           item={editingItem}
           templates={templates}
           defaultTemplateId={defaultTemplateId}
