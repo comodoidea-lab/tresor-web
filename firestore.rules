@@ -1,0 +1,17 @@
+// tresor-app-cc24a に現在デプロイされている Firestore セキュリティルールの控え。
+//
+// 取得日: 2026-09-03（コンソール表示のバージョン: 2026-03-29 8:07 AM）
+// 目的  : 開発凍結にあたり、ルールがバージョン管理外だったため記録として保存する。
+//         docs/FREEZE-OPS.md §2.5 / Step 0 を参照。
+//
+// 注意  : このファイルは firebase.json に紐づけていない（firestore セクションを持たせていない）。
+//         `firebase deploy` を実行してもこのルールは配信されない。あくまで控えである。
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{userId}/{document=**} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}
